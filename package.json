@@ -1,0 +1,30 @@
+{
+  "name": "ldn-tests",
+  "version": "0.0.1",
+  "description": "Linked Data Notifications tests",
+  "main": "index.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/csarven/tests.git"
+  },
+  "keywords": [
+    "ldn"
+  ],
+  "author": {
+    "name": "Sarven Capadisli",
+    "url": "http://csarven.ca/#i"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/csarven/ldn-tests/issues"
+  },
+  "homepage": "https://github.com/csarven/ldn-tests",
+  "dependencies": {
+    "koa": "^1.2.1",
+    "koa-better-ratelimit": "^2.1.2",
+    "koa-cors": "0.0.16",
+    "koa-route": "^2.4.2"
+  }
+}
