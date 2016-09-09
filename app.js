@@ -1,38 +1,27 @@
-var LdpStore = require('rdf-store-ldp/lite')
 var SimpleRDF = require('simplerdf')
-var RdfaParser = require('rdf-parser-rdfa')
-var RdfXmlParser = require('rdf-parser-rdfxml')
 var N3Parser = require('rdf-parser-n3')
+var JsonldParser = require('rdf-parser-jsonld')
+var RdfaParser = require('rdf-parser-rdfa')
 var SimpleRDFParse = require('simplerdf-parse')
 
 var formats = {parsers: {}}
+formats.parsers['text/turtle'] = N3Parser
+formats.parsers['application/ld+json'] = JsonldParser
 formats.parsers['application/xhtml+xml'] = RdfaParser
 formats.parsers['text/html'] = RdfaParser
-formats.parsers['text/turtle'] = N3Parser
-formats.parsers['application/rdf+xml'] = RdfXmlParser
 var parser = SimpleRDFParse(formats.parsers)
 
 SimpleRDF.parse = parser.parse.bind(parser)
-
-var storeFormats = {parsers:{}}
-storeFormats.parsers['text/turtle'] = require('rdf-parser-n3')
-storeFormats.parsers['application/ld+json'] = require('rdf-parser-jsonld')
-storeFormats.parsers['application/xhtml+xml'] = RdfaParser
-storeFormats.parsers['text/html'] = RdfaParser
-storeFormats.parsers['application/rdf+xml'] = RdfXmlParser
-
-exports.store = new LdpStore(storeFormats)
 exports.SimpleRDF = SimpleRDF
 
 var fs = require('fs');
 var path = require('path');
-//const url = require('url');
-var etag = require('etag');
 var extname = path.extname;
+var etag = require('etag');
+var uuid = require('node-uuid');
 var express = require('express');
 var bodyParser = require('body-parser');
 var app = module.exports = express();
-//app.disable('x-powered-by');
 
 const scheme = 'http';
 const hostname = 'localhost';
@@ -50,20 +39,16 @@ const inboxPath = 'inbox/';
 //   next();
 // });
 
-//TODO: If-None-Match
-
 var rawBodySaver = function (req, res, buf, encoding) {
   if (buf && buf.length) {
     req.rawBody = buf.toString(encoding || 'utf8');
   }
 }
 app.use(bodyParser.raw({ verify: rawBodySaver, type: '*/*' }));
-//app.use(bodyParser.json());
-//app.use(bodyParser.text());
 
 app.use(function(req, res, next) {
   req.getUrl = function() {
-    return req.protocol + "://" + req.get('host') + req.originalUrl;
+    return req.protocol + "://" + req.header('host') + req.originalUrl;
   }
   return next();
 });
@@ -212,12 +197,36 @@ function getResource(req, res, next){
 
 function postContainer(req, res, next){
   init(req, res);
-  res.status = 201;
   console.log(req.rawBody);
+  var data = req.rawBody;
+  var contentType = req.header('Content-Type');
 
-//TODO: parse as JSON-LD (or other RDF)
-var filename = 'x';
-res.set('Content-Location', 'http://localhost:3000/inbox/' + filename);
-res.send();
+  if(req.is('application/ld+json') || req.is('text/turtle')) {
+    SimpleRDF.parse(data, contentType, '_:ldn').then(
+      function(g) {
+        var fileName = uuid.v1();
+        var file = __dirname + '/' + inboxPath + fileName;
+        console.log(file);
+        fs.appendFile(file, data, function() {
+          var base = (req.getUrl().endsWith('/')) ? req.getUrl() : req.getUrl() + '/';
+          var location = base + fileName;
+
+          res.set('Location', location);
+          res.status(201);
+          res.send();
+          res.end();
+          return;
+        });
+      },
+      function(reason) {
+        res.status(400);
+        res.send();
+      }
+    );
+  }
+  else {
+    res.status(415);
+    res.end();
+  }
+  return;
 }
-
