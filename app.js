@@ -115,11 +115,16 @@ function getTarget(req, res, next){
 
   res.status(200);
   res.set('Link', '<' + req.getUrl() + inboxPath + '>; rel="http://www.w3.org/ns/ldp#inbox"')
-  res.type(contentType);
-  res.vary('Accept');
-  if(req.method.toLowerCase() == 'get') {
-    res.send(data);
+  res.set('Content-Type', contentType);
+  res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
+  res.set('ETag', etag(data));
+  res.set('Vary', 'Accept');
+  if(req.method === 'HEAD') {
+    res.send();
+    return next();
   }
+  res.send(data);
+  return next();
 }
 
 
@@ -129,8 +134,8 @@ function getResource(req, res, next){
 
   fs.stat(path, function(error, stats) {
     if (error) {
-      res.sendStatus(404);
-      return;
+      res.status(404);
+      return next();
     }
 
     if (stats.isFile()) {
@@ -141,37 +146,33 @@ function getResource(req, res, next){
             if (error) throw error;
 
             if (req.headers['if-none-match'] && ('"' + req.headers['if-none-match'] + '"') == etag(data)) {
-              return res.sendStatus(304);
+              res.status(304)
+              return next();
             }
 
             res.status(200);
-            res.type('application/ld+json; charset=utf-8');
-            res.vary('Accept');
+            res.set('Content-Type', 'application/ld+json; charset=utf-8');
+            res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
             res.set('ETag', etag(data));
             res.set('Last-Modified', stats.mtime);
-
-            if(req.method.toLowerCase() == 'head') {
-              res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
+            res.set('Vary', 'Accept');
+            if(req.method === 'HEAD') {
               res.send();
-              return;
+              return next();
             }
-
             res.send(data);
+            return next();
           });
       }
       else {
-        res.sendStatus(403);
+        res.status(403);
+        return next();
       }
     }
     else if(stats.isDirectory()) {
       fs.readdir(path, function(error, files){
         if(error) {
           console.log("Can't readdir: " + path); //throw err;
-        }
-
-        if(req.method.toLowerCase() == 'get') {
-          res.send(data);
-          return;
         }
 
         var contains = [];
@@ -185,18 +186,26 @@ function getResource(req, res, next){
           "@id": "",
           "contains": contains
         }) + "\n";
-        console.log(data);
+
+        if (req.headers['if-none-match'] && ('"' + req.headers['if-none-match'] + '"') == etag(data)) {
+          res.status(304)
+          return next();
+        }
 
         res.status(200);
-        res.type('application/ld+json; charset=utf-8');
-        res.vary('Accept');
+        res.set('Content-Type', 'application/ld+json; charset=utf-8');
+        res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
+        res.set('ETag', etag(data));
         res.set('Last-Modified', stats.mtime);
+        res.set('Vary', 'Accept');
+        if(req.method === 'HEAD') {
+          res.send();
+          return next();
+        }
         res.send(data);
-        return;
+        return next();
       });
     }
-
-    res.sendStatus(404);
     return;
   });
 }
