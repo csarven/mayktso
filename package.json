@@ -4,6 +4,9 @@
   "description": "Linked Data Notifications tests",
   "main": "index.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify --standalone ldn index.js > build.js",
+    "minify": "browserify --standalone ldn index.js | uglifyjs -c > build.min.js"
   },
   "repository": {
     "type": "git",
@@ -22,9 +25,14 @@
   },
   "homepage": "https://github.com/csarven/ldn-tests",
   "dependencies": {
-    "koa": "^1.2.1",
-    "koa-better-ratelimit": "^2.1.2",
-    "koa-cors": "0.0.16",
-    "koa-route": "^2.4.2"
+    "body-parser": "^1.15.2",
+    "etag": "^1.7.0",
+    "express": "^4.14.0",
+    "fs": "0.0.1-security",
+    "path": "^0.12.7",
+    "rdf-parser-rdfa": "git://github.com/rdf-ext/rdf-parser-rdfa.git#master",
+    "rdf-store-ldp": "git://github.com/rdf-ext/rdf-store-ldp.git#master",
+    "simplerdf": "^0.2.14",
+    "simplerdf-parse": "git@github.com:nicola/simplerdf-parse.git#master"
   }
 }
