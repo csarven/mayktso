@@ -90,7 +90,6 @@ if (!module.parent) {
 }
 
 function getTarget(req, res, next){
-  init(req, res);
   var path = __dirname + req.originalUrl;
 
   var data = JSON.stringify({
@@ -118,7 +117,6 @@ function getTarget(req, res, next){
 
 
 function getResource(req, res, next){
-  init(req, res);
   var path = __dirname + req.originalUrl;
 
   fs.stat(path, function(error, stats) {
@@ -200,7 +198,6 @@ function getResource(req, res, next){
 }
 
 function postContainer(req, res, next){
-  init(req, res);
   var data = req.rawBody;
   var contentType = req.header('Content-Type');
 
