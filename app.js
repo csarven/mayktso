@@ -134,7 +134,7 @@ function getResource(req, res, next){
     }
 
     if (stats.isFile()) {
-      var isReadable = stats["mode"] & 4 ? true : false;
+      var isReadable = stats.mode & 4 ? true : false;
 // //console.log('-- isReadable: ' + isReadable);
       if (isReadable) {
           fs.readFile(path, 'utf8', function(error, data){
@@ -148,6 +148,7 @@ function getResource(req, res, next){
             res.type('application/ld+json; charset=utf-8');
             res.vary('Accept');
             res.set('ETag', etag(data));
+            res.set('Last-Modified', stats.mtime);
 
             if(req.method.toLowerCase() == 'head') {
               res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
@@ -157,6 +158,9 @@ function getResource(req, res, next){
 
             res.send(data);
           });
+      }
+      else {
+        res.sendStatus(403);
       }
     }
     else if(stats.isDirectory()) {
@@ -186,10 +190,14 @@ function getResource(req, res, next){
         res.status(200);
         res.type('application/ld+json; charset=utf-8');
         res.vary('Accept');
+        res.set('Last-Modified', stats.mtime);
         res.send(data);
         return;
       });
     }
+
+    res.sendStatus(404);
+    return;
   });
 }
 
