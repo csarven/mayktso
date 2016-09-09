@@ -20,14 +20,10 @@ var extname = path.extname;
 var etag = require('etag');
 var uuid = require('node-uuid');
 var express = require('express');
+var https = require('https');
+var http = require('http');
 var bodyParser = require('body-parser');
-var app = module.exports = express();
-
-const scheme = 'http';
-const hostname = 'localhost';
-const port = 3000;
-const authority = scheme + '://' + hostname + ':' + port;
-const inboxPath = 'inbox/';
+var app = express();
 
 // app.use(compress());
 
@@ -70,18 +66,19 @@ app.use(function(req, res, next){
 });
 
 app.use(function(req, res, next) {
-  //console.log(req);
+//  console.log(req);
   //console.log(res);
   // console.log('----------')
   // console.log('req.method: ' + req.method);
   console.log(JSON.stringify(req.headers));
+  console.log('req.protocol: ' + req.protocol);
   // console.log('req.body: ')
   // console.log(req.body);
   // console.log(req.rawBody);
-  // console.log('req.originalUrl: ' + req.originalUrl);
-  // console.log('req.url: ' + req.url);
-  // console.log('req.getUrl: ' + req.getUrl());
-  // console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
+  console.log('req.originalUrl: ' + req.originalUrl);
+  console.log('req.url: ' + req.url);
+  console.log('req.getUrl: ' + req.getUrl());
+  console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
   return next();
 });
 
@@ -97,7 +94,29 @@ app.route('/inbox/')
   .post(postContainer);
 
 if (!module.parent) {
-  app.listen(port, function() {
+  fs.readFile(process.cwd() + '/config.json', 'utf8', function(error, file){
+    var config = JSON.parse(file);
+    console.log(config);
+
+    var scheme = 'http';
+    if (config.sslKey && config.sslCert) {
+      var options = {
+        key: fs.readFileSync(config.sslKey),
+        cert: fs.readFileSync(config.sslCert),
+        requestCert: false
+      };
+      https.createServer(options, app).listen(config.port);
+      scheme = 'https'
+    }
+    else {
+      http.createServer(app).listen(config.port);
+    }
+
+    var hostname = 'localhost';
+    var port = config.port;
+    var authority = scheme + '://' + hostname + ':' + port;
+    inboxPath = config.inboxPath;
+
     console.log('curl -i ' + authority);
   });
 }
@@ -213,18 +232,18 @@ function getResource(req, res, next){
 function postContainer(req, res, next){
   var data = req.rawBody;
   var contentType = req.header('Content-Type');
-
   if(req.is('application/ld+json') || req.is('text/turtle')) {
     SimpleRDF.parse(data, contentType, '_:ldn').then(
       function(g) {
         var fileName = uuid.v1();
         var file = __dirname + '/' + inboxPath + fileName;
-
+console.log(file);
         fs.appendFile(file, data, function() {
           var url = req.getUrl();
           var base = (url.endsWith('/')) ? url : url + '/';
-          var location = base + inboxPath + fileName;
-          console.log(location);
+console.log(base);
+          var location = base + fileName;
+console.log(location);
           res.set('Location', location);
           res.status(201);
           res.send();
