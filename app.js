@@ -107,7 +107,7 @@ function getTarget(req, res, next){
   res.set('Content-Type', contentType);
   res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
   res.set('ETag', etag(data));
-  res.set('Vary', 'Accept');
+  res.set('Vary', 'Origin');
   if(req.method === 'HEAD') {
     res.send();
     return next();
@@ -144,7 +144,7 @@ function getResource(req, res, next){
             res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
             res.set('ETag', etag(data));
             res.set('Last-Modified', stats.mtime);
-            res.set('Vary', 'Accept');
+            res.set('Vary', 'Origin');
             if(req.method === 'HEAD') {
               res.send();
               return next();
@@ -186,7 +186,7 @@ function getResource(req, res, next){
         res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
         res.set('ETag', etag(data));
         res.set('Last-Modified', stats.mtime);
-        res.set('Vary', 'Accept');
+        res.set('Vary', 'Origin');
         if(req.method === 'HEAD') {
           res.send();
           return next();
