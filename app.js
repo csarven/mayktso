@@ -223,7 +223,7 @@ function postContainer(req, res, next){
         fs.appendFile(file, data, function() {
           var url = req.getUrl();
           var base = (url.endsWith('/')) ? url : url + '/';
-          var location = base + fileName;
+          var location = base + inboxPath + fileName;
           console.log(location);
           res.set('Location', location);
           res.status(201);
