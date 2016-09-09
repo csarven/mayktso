@@ -29,6 +29,7 @@
     "etag": "^1.7.0",
     "express": "^4.14.0",
     "fs": "0.0.1-security",
+    "node-uuid": "^1.4.7",
     "path": "^0.12.7",
     "rdf-parser-rdfa": "git+ssh://git@github.com/rdf-ext/rdf-parser-rdfa.git#master",
     "rdf-store-ldp": "git+ssh://git@github.com/rdf-ext/rdf-store-ldp.git#master",
