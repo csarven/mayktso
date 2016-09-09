@@ -14,7 +14,6 @@ var parser = SimpleRDFParse(formats.parsers)
 SimpleRDF.parse = parser.parse.bind(parser)
 exports.SimpleRDF = SimpleRDF
 
-require('console-stamp')(console, "yyyy-mm-dd HH:MM:ss.l");
 var fs = require('fs');
 var path = require('path');
 var extname = path.extname;
@@ -44,7 +43,7 @@ var rawBodySaver = function (req, res, buf, encoding) {
   if (buf && buf.length) {
     req.rawBody = buf.toString(encoding || 'utf8');
   }
-}
+};
 app.use(bodyParser.raw({ verify: rawBodySaver, type: '*/*' }));
 
 app.use(function(req, res, next) {
@@ -54,21 +53,35 @@ app.use(function(req, res, next) {
   return next();
 });
 
+app.enable('trust proxy');
+app.use(function(req, res, next){
+  require('console-stamp')(console, {
+    pattern: "yyyy-mm-dd HH:MM:ss.l",
+    metadata: function () {
+      return (req.method + ' ' + req.getUrl() + ' ' + req.ips + '');
+    },
+    colors: {
+      stamp: "yellow",
+      label: "white",
+      metadata: "green"
+    }
+  });
+  return next();
+});
 
 app.use(function(req, res, next) {
   //console.log(req);
   //console.log(res);
-  console.log('----------')
-  console.log('req.method: ' + req.method);
-  console.log(req.headers);
-  console.log('req.body: ')
-  console.log(req.body);
-    console.log(req.rawBody);
-  console.log('req.originalUrl: ' + req.originalUrl);
-  console.log('req.url: ' + req.url);
-  console.log('req.getUrl: ' + req.getUrl());
-
-  console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
+  // console.log('----------')
+  // console.log('req.method: ' + req.method);
+  console.log(JSON.stringify(req.headers));
+  // console.log('req.body: ')
+  // console.log(req.body);
+  // console.log(req.rawBody);
+  // console.log('req.originalUrl: ' + req.originalUrl);
+  // console.log('req.url: ' + req.url);
+  // console.log('req.getUrl: ' + req.getUrl());
+  // console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
   return next();
 });
 
@@ -206,12 +219,12 @@ function postContainer(req, res, next){
       function(g) {
         var fileName = uuid.v1();
         var file = __dirname + '/' + inboxPath + fileName;
-        console.log(file);
+
         fs.appendFile(file, data, function() {
           var url = req.getUrl();
           var base = (url.endsWith('/')) ? url : url + '/';
           var location = base + fileName;
-
+          console.log(location);
           res.set('Location', location);
           res.status(201);
           res.send();
