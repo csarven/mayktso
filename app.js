@@ -14,6 +14,7 @@ var parser = SimpleRDFParse(formats.parsers)
 SimpleRDF.parse = parser.parse.bind(parser)
 exports.SimpleRDF = SimpleRDF
 
+require('console-stamp')(console, "yyyy-mm-dd HH:MM:ss.l");
 var fs = require('fs');
 var path = require('path');
 var extname = path.extname;
@@ -53,6 +54,24 @@ app.use(function(req, res, next) {
   return next();
 });
 
+
+app.use(function(req, res, next) {
+  //console.log(req);
+  //console.log(res);
+  console.log('----------')
+  console.log('req.method: ' + req.method);
+  console.log(req.headers);
+  console.log('req.body: ')
+  console.log(req.body);
+    console.log(req.rawBody);
+  console.log('req.originalUrl: ' + req.originalUrl);
+  console.log('req.url: ' + req.url);
+  console.log('req.getUrl: ' + req.getUrl());
+
+  console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
+  return next();
+});
+
 //app.set('etag', 'strong')
 
 app.route('/')
@@ -68,21 +87,6 @@ if (!module.parent) {
   app.listen(port, function() {
     console.log('curl -i ' + authority);
   });
-}
-
-function init(req, res) {
-//console.log(req);
-//console.log(res);
-console.log('----------')
-console.log('req.method: ' + req.method);
-console.log(req.headers);
-console.log('req.body: ')
-console.log(req.body);
-console.log('req.originalUrl: ' + req.originalUrl);
-console.log('req.url: ' + req.url);
-console.log('req.getUrl: ' + req.getUrl());
-
-console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
 }
 
 function getTarget(req, res, next){
@@ -197,7 +201,6 @@ function getResource(req, res, next){
 
 function postContainer(req, res, next){
   init(req, res);
-  console.log(req.rawBody);
   var data = req.rawBody;
   var contentType = req.header('Content-Type');
 
@@ -208,7 +211,8 @@ function postContainer(req, res, next){
         var file = __dirname + '/' + inboxPath + fileName;
         console.log(file);
         fs.appendFile(file, data, function() {
-          var base = (req.getUrl().endsWith('/')) ? req.getUrl() : req.getUrl() + '/';
+          var url = req.getUrl();
+          var base = (url.endsWith('/')) ? url : url + '/';
           var location = base + fileName;
 
           res.set('Location', location);
