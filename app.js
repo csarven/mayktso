@@ -68,13 +68,12 @@ app.use(function(req, res, next){
 app.use(function(req, res, next) {
 //  console.log(req);
   //console.log(res);
-  // console.log('----------')
-  // console.log('req.method: ' + req.method);
   console.log(JSON.stringify(req.headers));
   console.log('req.protocol: ' + req.protocol);
-  // console.log('req.body: ')
+  console.log(process.cwd());
   // console.log(req.body);
   // console.log(req.rawBody);
+  console.log('req.baseUrl: ' + req.baseUrl);
   console.log('req.originalUrl: ' + req.originalUrl);
   console.log('req.url: ' + req.url);
   console.log('req.getUrl: ' + req.getUrl());
@@ -94,8 +93,16 @@ app.route('/inbox/')
   .post(postContainer);
 
 if (!module.parent) {
-  fs.readFile(process.cwd() + '/config.json', 'utf8', function(error, file){
-    var config = JSON.parse(file);
+  fs.readFile(__dirname + '/config.json', 'utf8', function(error, file){
+    var config;
+    if (error) {
+      config = { port: 3000 , inboxPath: 'inbox/' };
+    }
+    else {
+      config = JSON.parse(file);
+      config['port'] = config.port || 3000;
+      config['inboxPath'] = config.inboxPath || 'inbox/';
+    }
     console.log(config);
 
     var scheme = 'http';
@@ -106,15 +113,14 @@ if (!module.parent) {
         requestCert: false
       };
       https.createServer(options, app).listen(config.port);
-      scheme = 'https'
+      scheme = 'https';
     }
     else {
       http.createServer(app).listen(config.port);
     }
 
     var hostname = 'localhost';
-    var port = config.port;
-    var authority = scheme + '://' + hostname + ':' + port;
+    var authority = scheme + '://' + hostname + ':' + config.port;
     inboxPath = config.inboxPath;
 
     console.log('curl -i ' + authority);
@@ -150,7 +156,7 @@ function getTarget(req, res, next){
 
 function getResource(req, res, next){
   var path = __dirname + req.originalUrl;
-
+console.log(path);
   fs.stat(path, function(error, stats) {
     if (error) {
       res.status(404);
