@@ -1,7 +1,7 @@
 {
   "port": "3000",
-  "sslKey": "",
-  "sslCert": "",
+  "sslKey": "/path/to/privkey.pem",
+  "sslCert": "/path/to/cert.pem",
   "inboxPath": "inbox/"
 }
 
