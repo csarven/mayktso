@@ -2,6 +2,7 @@
   "port": "3000",
   "sslKey": "/path/to/privkey.pem",
   "sslCert": "/path/to/cert.pem",
-  "inboxPath": "inbox/"
+  "inboxPath": "inbox/",
+  "queuePath": "queue/",
+  "maxPayloadSize": 1000
 }
-
