@@ -93,16 +93,13 @@ app.route('/inbox/')
   .post(postContainer);
 
 if (!module.parent) {
+  var config;
   fs.readFile(__dirname + '/config.json', 'utf8', function(error, file){
-    var config;
-    if (error) {
-      config = { port: 3000 , inboxPath: 'inbox/' };
-    }
-    else {
-      config = JSON.parse(file);
-      config['port'] = config.port || 3000;
-      config['inboxPath'] = config.inboxPath || 'inbox/';
-    }
+    config = (error) ? {} : JSON.parse(file);
+    config['port'] = config.port || 3000;
+    config['inboxPath'] = config.inboxPath || 'inbox/';
+    config['queuePath'] = config.queuePath || 'queue/';
+    config['maxPayloadSize'] = config.maxPayloadSize || 5;
     console.log(config);
 
     var scheme = 'http';
@@ -122,6 +119,8 @@ if (!module.parent) {
     var hostname = 'localhost';
     var authority = scheme + '://' + hostname + ':' + config.port;
     inboxPath = config.inboxPath;
+    queuePath = config.queuePath;
+    maxPayloadSize = config.maxPayloadSize;
 
     console.log('curl -i ' + authority);
   });
