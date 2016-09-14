@@ -246,29 +246,46 @@ function postContainer(req, res, next){
   var data = req.rawBody;
   var contentType = req.header('Content-Type');
   if(req.is('application/ld+json') || req.is('text/turtle')) {
-    SimpleRDF.parse(data, contentType, '_:ldn').then(
-      function(g) {
-        var fileName = uuid.v1();
-        var file = __dirname + '/' + inboxPath + fileName;
-console.log(file);
-        fs.appendFile(file, data, function() {
-          var url = req.getUrl();
-          var base = (url.endsWith('/')) ? url : url + '/';
-console.log(base);
-          var location = base + fileName;
-console.log(location);
-          res.set('Location', location);
-          res.status(201);
+    var contentLength = Buffer.byteLength(data, 'utf-8');
+    var createRequest = (contentLength < maxPayloadSize) ? true : false;
+    var fileName = uuid.v1();
+
+    if(createRequest) {
+      SimpleRDF.parse(data, contentType, '_:ldn').then(
+        function(g) {
+          var file = __dirname + '/' + inboxPath + fileName;
+  console.log(file);
+          fs.appendFile(file, data, function() {
+            var url = req.getUrl();
+            var base = url.endsWith('/') ? url : url + '/';
+  console.log(base);
+            var location = base + fileName;
+  console.log(location);
+            res.set('Location', location);
+            res.status(201);
+            res.send();
+            res.end();
+            return;
+          });
+        },
+        function(reason) {
+          res.status(400);
           res.send();
+        }
+      );
+    }
+    else {
+        var file = __dirname + '/' + queuePath + fileName;
+console.log(file);
+        fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available\n', function() {
+          res.status(202);
+          res.set('Content-Type', 'text/plain; charset=utf-8');
+          var location = req.protocol + '://' + req.headers.host + '/queue/' + fileName;
+          res.send('Your request is being processed. Check status: ' + location + '\n');
           res.end();
           return;
         });
-      },
-      function(reason) {
-        res.status(400);
-        res.send();
-      }
-    );
+    }
   }
   else {
     res.status(415);
