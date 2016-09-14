@@ -268,3 +268,33 @@ console.log(location);
   }
   return;
 }
+
+function deleteResource(path){
+  if (!path) { return; }
+
+  fs.stat(path, function(error, stats) {
+    if (error) {
+      res.status(404);
+      return next();
+    }
+
+    if (stats.isFile()) {
+console.log(stats);
+      var isWriteable = stats.mode & 4 ? true : false;
+// //console.log('-- isWriteable: ' + isWriteable);
+//      if (isWriteable) {
+          fs.unlink(path, function(error, data){
+            if (error) {
+              console.log(error);
+            }
+            console.log('Delete: ' + path);
+          });
+//      }
+    }
+    else {
+      res.status(404);
+      res.end();
+    }
+  });
+//  return;
+}
