@@ -92,6 +92,9 @@ app.route('/inbox/:id?')
 app.route('/inbox/')
   .post(postContainer);
 
+app.route('/queue/:id')
+  .get(getResource);
+
 if (!module.parent) {
   var config;
   fs.readFile(__dirname + '/config.json', 'utf8', function(error, file){
@@ -185,6 +188,11 @@ console.log(path);
               return next();
             }
             res.send(data);
+
+            if(path.startsWith(__dirname + '/queue/')) {
+              deleteResource(path);
+            }
+
             return next();
           });
       }
