@@ -159,6 +159,12 @@ function getTarget(req, res, next){
 function getResource(req, res, next){
   var path = __dirname + req.originalUrl;
 console.log(path);
+  if(!req.accepts('application/ld+json')) {
+    res.status(406);
+    res.end();
+    return next();
+  }
+
   fs.stat(path, function(error, stats) {
     if (error) {
       res.status(404);
@@ -245,7 +251,7 @@ console.log(path);
 function postContainer(req, res, next){
   var data = req.rawBody;
   var contentType = req.header('Content-Type');
-  if(req.is('application/ld+json') || req.is('text/turtle')) {
+  if(req.is('application/ld+json')) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < maxPayloadSize) ? true : false;
     var fileName = uuid.v1();
