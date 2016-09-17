@@ -117,7 +117,7 @@ if (!module.parent) {
     config['port'] = config.port || 3000;
     config['inboxPath'] = config.inboxPath || 'inbox/';
     config['queuePath'] = config.queuePath || 'queue/';
-    config['maxPayloadSize'] = config.maxPayloadSize || 5;
+    config['maxPayloadSize'] = config.maxPayloadSize || 1000;
     console.log(config);
 
     var scheme = 'http';
