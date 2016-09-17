@@ -466,6 +466,16 @@ console.log(file);
   }
 }
 
+function isWritable(file) {
+  try {
+    fs.accessSync(file, fs.W_OK);
+    return true;
+  }
+  catch(e) {
+    return false;
+  }
+}
+
 function deleteResource(path){
   if (!path) { return; }
 
@@ -478,7 +488,7 @@ function deleteResource(path){
     if (stats.isFile()) {
       fs.access(path, fs.W_OK, function(error) {
         if(!error){
-          fs.unlink(path, function(error, data){
+          fs.unlink(path, function(error){
             if (error) {
               console.log(error);
             }
