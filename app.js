@@ -216,7 +216,8 @@ function serializeData(data, fromContentType, toContentType, options) {
 function getResource(req, res, next){
   var path = __dirname + req.originalUrl;
 console.log(path);
-  if(!req.accepts('application/ld+json')) {
+
+  if(!requestedType) {
     res.status(406);
     res.end();
     return next();
