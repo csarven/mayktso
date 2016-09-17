@@ -515,16 +515,14 @@ function deleteResource(path){
     }
 
     if (stats.isFile()) {
-      fs.access(path, fs.W_OK, function(error) {
-        if(!error){
-          fs.unlink(path, function(error){
-            if (error) {
-              console.log(error);
-            }
-            console.log('Delete: ' + path);
-          });
-        }
-      });
+      if(isWritable(path)){
+        fs.unlink(path, function(error){
+          if (error) {
+            console.log(error);
+          }
+          console.log('Delete: ' + path);
+        });
+      }
     }
     else {
       res.status(404);
