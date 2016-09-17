@@ -106,13 +106,16 @@ app.use(function(req, res, next) {
 
 app.route('/')
   .get(getTarget)
-  .head(getTarget);
+  .head(getTarget)
+  .all(finalMethod);
 app.route('/inbox/:id?')
   .get(getResource)
   .head(getResource)
-  .options(getResource);
+  .options(getResource)
+  .all(finalMethod);
 app.route('/inbox/')
-  .post(postContainer);
+  .post(postContainer)
+  .all(finalMethod);
 
 app.route('/queue/:id')
   .get(getResource);
@@ -219,6 +222,19 @@ function serializeData(data, fromContentType, toContentType, options) {
   );
 }
 
+
+function finalMethod(req, res, next){
+  switch(req.method){
+    case 'GET': case 'HEAD': case 'OPTIONS': case 'POST':
+      break;
+    default:
+      res.status(405);
+      res.set('Allow', 'GET, HEAD, OPTIONS, POST');
+      res.end();
+      break;
+  }
+  return next();
+}
 
 function getResource(req, res, next){
   var path = __dirname + req.originalUrl;
