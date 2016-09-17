@@ -315,6 +315,7 @@ console.log(path);
         res.set('ETag', etag(data));
         res.set('Last-Modified', stats.mtime);
         res.set('Vary', 'Origin');
+        res.set('Accept-Post', 'application/ld+json, text/turtle');
         if(req.method === 'HEAD') {
           res.send();
           return next();
