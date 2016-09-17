@@ -242,9 +242,9 @@ console.log(path);
         fs.readFile(path, 'utf8', function(error, data){
           if (error) throw error;
 
-          if (req.headers['if-none-match'] && ('"' + req.headers['if-none-match'] + '"') == etag(data)) {
-            res.status(304)
-            return next();
+          if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
+            res.status(304);
+            res.end();
           }
 
           res.status(200);
@@ -329,8 +329,9 @@ console.log(path);
 
         respond().then(
           function(data) {
-            if (req.headers['if-none-match'] && ('"' + req.headers['if-none-match'] + '"') == etag(data)) {
-              res.status(304)
+            if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
+              res.status(304);
+              res.end();
               return next();
             }
 
