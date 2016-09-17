@@ -447,7 +447,7 @@ console.log(location);
       else {
         var file = __dirname + '/' + queuePath + fileName;
 console.log(file);
-        fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available\n', function() {
+        fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available.\n', function() {
           res.status(202);
           res.set('Content-Type', 'text/plain; charset=utf-8');
           var location = req.protocol + '://' + req.headers.host + '/queue/' + fileName;
@@ -474,22 +474,20 @@ function deleteResource(path){
     }
 
     if (stats.isFile()) {
-console.log(stats);
-      var isWriteable = stats.mode & 4 ? true : false;
-// //console.log('-- isWriteable: ' + isWriteable);
-//      if (isWriteable) {
+      fs.access(path, fs.W_OK, function(error) {
+        if(!error){
           fs.unlink(path, function(error, data){
             if (error) {
               console.log(error);
             }
             console.log('Delete: ' + path);
           });
-//      }
+        }
+      });
     }
     else {
       res.status(404);
       res.end();
     }
   });
-//  return;
 }
