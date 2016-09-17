@@ -38,7 +38,7 @@ var availableTypes = ['application/ld+json', 'text/turtle'];
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS, POST");
   if(req.header('Origin')) {
     res.header("Access-Control-Allow-Origin", req.header('Origin'));
   }
@@ -46,7 +46,7 @@ app.use(function(req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
   }
   res.header("Access-Control-Allow-Headers", "Accept-Post, Content-Length, Content-Type, If-None-Match, Link, Location, Origin, Slug, X-Requested-With");
-   res.header("Access-Control-Expose-Headers", "Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Length, Content-Type, Link, Last-Modified, ETag, Vary");
+   res.header("Access-Control-Expose-Headers", "Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Allow, Content-Length, Content-Type, Link, Last-Modified, ETag, Vary");
   return next();
 });
 
@@ -109,7 +109,8 @@ app.route('/')
   .head(getTarget);
 app.route('/inbox/:id?')
   .get(getResource)
-  .head(getResource);
+  .head(getResource)
+  .options(getResource);
 app.route('/inbox/')
   .post(postContainer);
 
@@ -221,7 +222,7 @@ function serializeData(data, fromContentType, toContentType, options) {
 
 function getResource(req, res, next){
   var path = __dirname + req.originalUrl;
-console.log(path);
+//console.log(path);
 
   if(!requestedType) {
     res.status(406);
@@ -312,7 +313,7 @@ console.log(path);
 
         var respond = function() {
           return new Promise(function(resolve, reject) {
-            if(requestedType == 'application/ld+json' || req.method === 'HEAD') {
+            if(requestedType == 'application/ld+json') {
               return resolve(data);
             }
             else {
@@ -335,18 +336,26 @@ console.log(path);
               return next();
             }
 
-            res.status(200);
             res.set('Content-Type', requestedType + '; charset=utf-8');
             res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
             res.set('ETag', etag(data));
             res.set('Last-Modified', stats.mtime);
             res.set('Vary', 'Origin');
             res.set('Accept-Post', 'application/ld+json, text/turtle');
-            if(req.method === 'HEAD') {
-              res.send();
-              return next();
+
+            switch(req.method) {
+              case 'GET': default:
+                res.status(200);
+                res.send(data);
+                break;
+              case 'HEAD':
+                res.status(200);
+                res.send();
+                break;
+              case 'OPTIONS':
+                res.status(204);
+                break;
             }
-            res.send(data);
             return next();
           },
           function(reason){
