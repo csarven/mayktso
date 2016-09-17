@@ -36,13 +36,18 @@ var availableTypes = ['application/ld+json', 'text/turtle'];
 
 // app.use(compress());
 
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Access-Control-Allow-Origin, Authorization, Origin, X-Requested-With, Content-Type, Accept, ETag, Cache-Control, If-None-Match");
-//   res.header("Access-Control-Expose-Headers", "Etag, Authorization, Origin, X-Requested-With, Content-Type, Accept, If-None-Match, Access-Control-Allow-Origin");
-//   res.header("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS");
-//   next();
-// });
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+  if(req.header('Origin')) {
+    res.header("Access-Control-Allow-Origin", req.header('Origin'));
+  }
+  else {
+    res.header("Access-Control-Allow-Origin", "*");
+  }
+  res.header("Access-Control-Allow-Headers", "Accept-Post, Content-Length, Content-Type, If-None-Match, Link, Location, Origin, Slug, X-Requested-With");
+   res.header("Access-Control-Expose-Headers", "Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Content-Length, Content-Type, Link, Last-Modified, ETag, Vary");
+  return next();
+});
 
 var rawBodySaver = function (req, res, buf, encoding) {
   if (buf && buf.length) {
