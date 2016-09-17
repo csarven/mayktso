@@ -233,32 +233,53 @@ console.log(path);
       var isReadable = stats.mode & 4 ? true : false;
 // //console.log('-- isReadable: ' + isReadable);
       if (isReadable) {
-          fs.readFile(path, 'utf8', function(error, data){
-            if (error) throw error;
+        fs.readFile(path, 'utf8', function(error, data){
+          if (error) throw error;
 
-            if (req.headers['if-none-match'] && ('"' + req.headers['if-none-match'] + '"') == etag(data)) {
-              res.status(304)
-              return next();
-            }
-
-            res.status(200);
-            res.set('Content-Type', 'application/ld+json; charset=utf-8');
-            res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
-            res.set('ETag', etag(data));
-            res.set('Last-Modified', stats.mtime);
-            res.set('Vary', 'Origin');
-            if(req.method === 'HEAD') {
-              res.send();
-              return next();
-            }
-            res.send(data);
-
-            if(path.startsWith(__dirname + '/queue/')) {
-              deleteResource(path);
-            }
-
+          if (req.headers['if-none-match'] && ('"' + req.headers['if-none-match'] + '"') == etag(data)) {
+            res.status(304)
             return next();
+          }
+
+          res.status(200);
+
+          var toContentType = requestedType;
+          var options = { 'subjectURI': req.getUrl() };
+          var unserializeableCount = 0;
+
+          availableTypes.forEach(function(fromContentType){
+            serializeData(data, fromContentType, toContentType, options).then(
+              function(transformedData){
+                var outputData = (fromContentType != toContentType) ? transformedData : data;
+
+                res.set('Content-Type', requestedType +'; charset=utf-8');
+                res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
+                res.set('ETag', etag(outputData));
+                res.set('Last-Modified', stats.mtime);
+                res.set('Vary', 'Origin');
+                if(req.method === 'HEAD') {
+                  res.send();
+                  return next();
+                }
+                res.send(outputData);
+
+                if(path.startsWith(__dirname + '/queue/')) {
+                  deleteResource(path);
+                }
+
+                return next();
+              },
+              function(reason){
+                unserializeableCount++;
+                if(availableTypes.length == unserializeableCount) {
+                  res.status(500);
+                  res.end();
+                  return next();
+                }
+              }
+            );
           });
+        });
       }
       else {
         res.status(403);
