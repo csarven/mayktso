@@ -342,6 +342,7 @@ function getResource(req, res, next){
             res.set('Last-Modified', stats.mtime);
             res.set('Vary', 'Origin');
             res.set('Accept-Post', 'application/ld+json, text/turtle');
+            res.set('Allow', 'GET, HEAD, OPTIONS, POST');
 
             switch(req.method) {
               case 'GET': default:
