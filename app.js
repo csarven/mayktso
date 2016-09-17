@@ -171,6 +171,47 @@ function getTarget(req, res, next){
   return next();
 }
 
+//From https://github.com/linkeddata/dokieli/scripts/do.js
+function getGraphFromData(data, options) {
+  options = options || {};
+  if (!('contentType' in options)) {
+    options['contentType'] = 'text/turtle';
+  }
+  if (!('subjectURI' in options)) {
+    options['subjectURI'] = '_:dokieli';
+  }
+
+  return SimpleRDF.parse(data, options['contentType'], options['subjectURI']);
+}
+
+function getGraph(url) {
+    return SimpleRDF({}, url, null, RDFstore).get();
+}
+
+function serializeGraph(g, options) {
+  options = options || {};
+  if (!('contentType' in options)) {
+    options['contentType'] = 'text/turtle';
+  }
+
+  return RDFstore.serializers[options.contentType].serialize(g._graph);
+}
+
+function serializeData(data, fromContentType, toContentType, options) {
+  var o = {
+    'contentType': fromContentType,
+    'subjectURI': options.subjectURI
+  };
+  return getGraphFromData(data, o).then(
+    function(g) {
+      return serializeGraph(g, { 'contentType': toContentType });
+    },
+    function(reason) {
+      return Promise.reject(reason);
+    }
+  );
+}
+
 
 function getResource(req, res, next){
   var path = __dirname + req.originalUrl;
