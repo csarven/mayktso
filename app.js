@@ -33,6 +33,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var accept, requestedType;
 var availableTypes = ['application/ld+json', 'text/turtle'];
+var path;
 
 // app.use(compress());
 
@@ -83,6 +84,7 @@ app.use(function(req, res, next){
 app.use(function(req, res, next) {
   accept = accepts(req);
   requestedType = accept.type(availableTypes);
+  path = __dirname + req.originalUrl;
 
   // console.log(req);
   // console.log(res);
@@ -106,19 +108,9 @@ app.use(function(req, res, next) {
 
 app.route('/')
   .get(getTarget)
-  .head(getTarget)
-  .all(finalMethod);
-app.route('/inbox/:id?')
-  .get(getResource)
-  .head(getResource)
-  .options(getResource)
-  .all(finalMethod);
-app.route('/inbox/')
-  .post(postContainer)
-  .all(finalMethod);
-
-app.route('/queue/:id')
-  .get(getResource);
+  .head(getTarget);
+app.route('/inbox/:id?').all(handleResource);
+app.route('/queue/:id').all(handleResource);
 
 if (!module.parent) {
   var config;
@@ -223,22 +215,25 @@ function serializeData(data, fromContentType, toContentType, options) {
 }
 
 
-function finalMethod(req, res, next){
+function handleResource(req, res, next){
+//  var path = __dirname + req.originalUrl;
+//console.log(path);
   switch(req.method){
-    case 'GET': case 'HEAD': case 'OPTIONS': case 'POST':
+    case 'GET': case 'HEAD': case 'OPTIONS':
+      break;
+    case 'POST':
+      postContainer(req, res, next);
+      // res.end();
+      // return next();
+      return;
       break;
     default:
       res.status(405);
-      res.set('Allow', 'GET, HEAD, OPTIONS, POST');
+      res.set('Allow', 'GET, HEAD, OPTIONS');
       res.end();
+      return next();
       break;
   }
-  return next();
-}
-
-function getResource(req, res, next){
-  var path = __dirname + req.originalUrl;
-//console.log(path);
 
   if(!requestedType) {
     res.status(406);
@@ -264,7 +259,12 @@ function getResource(req, res, next){
             res.end();
           }
 
-          res.status(200);
+          if(path.startsWith(__dirname + '/queue/')) {
+            res.status(200);
+            res.send(data);
+            res.end();
+            deleteResource(path);
+          }
 
           var toContentType = requestedType;
           var options = { 'subjectURI': req.getUrl() };
@@ -280,14 +280,22 @@ function getResource(req, res, next){
                 res.set('ETag', etag(outputData));
                 res.set('Last-Modified', stats.mtime);
                 res.set('Vary', 'Origin');
-                if(req.method === 'HEAD') {
-                  res.send();
-                  return next();
-                }
-                res.send(outputData);
+                res.set('Allow', 'GET, HEAD, OPTIONS');
 
-                if(path.startsWith(__dirname + '/queue/')) {
-                  deleteResource(path);
+                switch(req.method) {
+                  case 'GET': default:
+                    res.status(200);
+                    res.send(outputData);
+                    break;
+                  case 'HEAD':
+                    res.status(200);
+                    res.send();
+                    break;
+                  case 'OPTIONS':
+                    res.status(204);
+//                    res.set('Allow', 'GET, HEAD, OPTIONS');
+                    res.end();
+                    break;
                 }
 
                 return next();
@@ -371,6 +379,7 @@ function getResource(req, res, next){
                 break;
               case 'OPTIONS':
                 res.status(204);
+                res.end();
                 break;
             }
             return next();
@@ -390,36 +399,52 @@ function getResource(req, res, next){
 function postContainer(req, res, next){
   var data = req.rawBody;
   var contentType = req.header('Content-Type');
+
   if(req.is('application/ld+json') || req.is('text/turtle')) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < maxPayloadSize) ? true : false;
     var fileName = uuid.v1();
 
-    if(createRequest) {
-      SimpleRDF.parse(data, contentType, '_:ldn').then(
-        function(g) {
-          var file = __dirname + '/' + inboxPath + fileName;
-  console.log(file);
-          fs.appendFile(file, data, function() {
-            var url = req.getUrl();
-            var base = url.endsWith('/') ? url : url + '/';
-  console.log(base);
-            var location = base + fileName;
-  console.log(location);
-            res.set('Location', location);
-            res.status(201);
-            res.send();
-            res.end();
-            return;
-          });
-        },
-        function(reason) {
-          res.status(400);
-          res.send();
+    fs.stat(path, function(error, stats) {
+      if(error) {
+        res.status(404);
+        res.end();
+        return next();
+      }
+//console.log(stats);
+
+      if(createRequest) {
+        if(stats.isDirectory()) {
+          SimpleRDF.parse(data, contentType, '_:ldn').then(
+            function(g) {
+              var file = __dirname + '/' + inboxPath + fileName;
+//console.log(file);
+              fs.appendFile(file, data, function() {
+                var url = req.getUrl();
+                var base = url.endsWith('/') ? url : url + '/';
+                var location = base + fileName;
+console.log(location);
+                res.set('Location', location);
+                res.status(201);
+                res.send();
+                res.end();
+                return;
+              });
+            },
+            function(reason) {
+              res.status(400);
+              res.send();
+            }
+          );
         }
-      );
-    }
-    else {
+        else {
+          res.status(405);
+          res.set('Allow', 'GET, HEAD, OPTIONS');
+          res.end();
+          return next();
+        }
+      }
+      else {
         var file = __dirname + '/' + queuePath + fileName;
 console.log(file);
         fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available\n', function() {
@@ -430,13 +455,13 @@ console.log(file);
           res.end();
           return;
         });
-    }
+      }
+    });
   }
   else {
     res.status(415);
     res.end();
   }
-  return;
 }
 
 function deleteResource(path){
