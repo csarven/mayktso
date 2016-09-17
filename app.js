@@ -28,8 +28,11 @@ var uuid = require('node-uuid');
 var express = require('express');
 var https = require('https');
 var http = require('http');
+var accepts = require('accepts');
 var bodyParser = require('body-parser');
 var app = express();
+var accept, requestedType;
+var availableTypes = ['application/ld+json', 'text/turtle'];
 
 // app.use(compress());
 
@@ -72,16 +75,22 @@ app.use(function(req, res, next){
 });
 
 app.use(function(req, res, next) {
-//  console.log(req);
-  //console.log(res);
+  accept = accepts(req);
+  requestedType = accept.type(availableTypes);
+
+  // console.log(req);
+  // console.log(res);
+
+  console.log('-----------------');
   console.log(JSON.stringify(req.headers));
-  console.log('req.protocol: ' + req.protocol);
-  console.log(process.cwd());
+  // console.log('req.protocol: ' + req.protocol);
+  // console.log('accept.types(): ' + accept.types());
+  console.log('requestedType: ' + requestedType);
   // console.log(req.body);
   // console.log(req.rawBody);
-  console.log('req.baseUrl: ' + req.baseUrl);
+  // console.log('req.baseUrl: ' + req.baseUrl);
   console.log('req.originalUrl: ' + req.originalUrl);
-  console.log('req.url: ' + req.url);
+  // console.log('req.url: ' + req.url);
   console.log('req.getUrl: ' + req.getUrl());
   console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
   return next();
@@ -131,6 +140,7 @@ if (!module.parent) {
     queuePath = config.queuePath;
     maxPayloadSize = config.maxPayloadSize;
 
+    console.log('process.cwd(): ' + process.cwd());
     console.log('curl -i ' + authority);
   });
 }
