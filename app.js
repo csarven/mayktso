@@ -451,6 +451,9 @@ console.log(location);
       else {
         var file = __dirname + '/' + queuePath + fileName;
 console.log(file);
+
+        gcDirectory(__dirname + '/' + queuePath);
+
         fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available.\n', function() {
           res.status(202);
           res.set('Content-Type', 'text/plain; charset=utf-8');
