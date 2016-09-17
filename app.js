@@ -330,7 +330,7 @@ console.log(path);
 function postContainer(req, res, next){
   var data = req.rawBody;
   var contentType = req.header('Content-Type');
-  if(!requestedType) {
+  if(req.is('application/ld+json') || req.is('text/turtle')) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < maxPayloadSize) ? true : false;
     var fileName = uuid.v1();
