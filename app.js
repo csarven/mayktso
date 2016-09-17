@@ -417,27 +417,7 @@ function postContainer(req, res, next){
 
       if(createRequest) {
         if(stats.isDirectory()) {
-            var files = fs.readdirSync(path)
-              .filter(function(v){
-                return isWritable(path + v);
-              })
-              .map(function(v) {
-                return {
-                  name:v,
-                  time:fs.statSync(path + v).mtime.getTime() };
-               })
-               .sort(function(a, b) { return a.time - b.time; })
-               .map(function(v) { return v.name; } );
-
-            if(files.length >= maxResourceCount) {
-              var removeFile = path + files[0];
-              fs.unlink(removeFile, function(error){
-                if (error) {
-                  console.log(error);
-                }
-                console.log('To make space, removed: ' + removeFile);
-              });
-            }
+            gcDirectory(path);
 
             SimpleRDF.parse(data, contentType, '_:ldn').then(
               function(g) {
@@ -485,6 +465,30 @@ console.log(file);
   else {
     res.status(415);
     res.end();
+  }
+}
+
+function gcDirectory(path){
+  var files = fs.readdirSync(path)
+    .filter(function(v){
+      return isWritable(path + v);
+    })
+    .map(function(v) {
+      return {
+        name:v,
+        time:fs.statSync(path + v).mtime.getTime() };
+     })
+     .sort(function(a, b) { return a.time - b.time; })
+     .map(function(v) { return v.name; } );
+
+  if(files.length >= maxResourceCount) {
+    var removeFile = path + files[0];
+    fs.unlink(removeFile, function(error){
+      if (error) {
+        console.log(error);
+      }
+      console.log('To make space, removed: ' + removeFile);
+    });
   }
 }
 
