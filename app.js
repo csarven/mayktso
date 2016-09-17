@@ -120,6 +120,7 @@ if (!module.parent) {
     config['inboxPath'] = config.inboxPath || 'inbox/';
     config['queuePath'] = config.queuePath || 'queue/';
     config['maxPayloadSize'] = config.maxPayloadSize || 1000;
+    config['maxResourceCount'] = config.maxResourceCount || 10;
     console.log(config);
 
     var scheme = 'http';
@@ -141,6 +142,7 @@ if (!module.parent) {
     inboxPath = config.inboxPath;
     queuePath = config.queuePath;
     maxPayloadSize = config.maxPayloadSize;
+    maxResourceCount = config.maxResourceCount;
 
     console.log('process.cwd(): ' + process.cwd());
     console.log('curl -i ' + authority);
