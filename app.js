@@ -310,24 +310,50 @@ console.log(path);
           "contains": contains
         }) + "\n";
 
-        if (req.headers['if-none-match'] && ('"' + req.headers['if-none-match'] + '"') == etag(data)) {
-          res.status(304)
-          return next();
-        }
+        var respond = function() {
+          return new Promise(function(resolve, reject) {
+            if(requestedType == 'application/ld+json' || req.method === 'HEAD') {
+              return resolve(data);
+            }
+            else {
+              var fromContentType = 'application/ld+json';
+              var toContentType = requestedType;
+              var options = { 'subjectURI': req.getUrl() };
+              return serializeData(data, fromContentType, toContentType, options).then(
+                function(i) { resolve(i); },
+                function(j) { reject(j); }
+              );
+            }
+          });
+        };
 
-        res.status(200);
-        res.set('Content-Type', 'application/ld+json; charset=utf-8');
-        res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
-        res.set('ETag', etag(data));
-        res.set('Last-Modified', stats.mtime);
-        res.set('Vary', 'Origin');
-        res.set('Accept-Post', 'application/ld+json, text/turtle');
-        if(req.method === 'HEAD') {
-          res.send();
-          return next();
-        }
-        res.send(data);
-        return next();
+        respond().then(
+          function(data) {
+            if (req.headers['if-none-match'] && ('"' + req.headers['if-none-match'] + '"') == etag(data)) {
+              res.status(304)
+              return next();
+            }
+
+            res.status(200);
+            res.set('Content-Type', requestedType + '; charset=utf-8');
+            res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
+            res.set('ETag', etag(data));
+            res.set('Last-Modified', stats.mtime);
+            res.set('Vary', 'Origin');
+            res.set('Accept-Post', 'application/ld+json, text/turtle');
+            if(req.method === 'HEAD') {
+              res.send();
+              return next();
+            }
+            res.send(data);
+            return next();
+          },
+          function(reason){
+            res.status(500);
+            res.end();
+            return next();
+          }
+        );
       });
     }
     return;
