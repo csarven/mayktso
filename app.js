@@ -1,3 +1,4 @@
+var LdpStore = require('rdf-store-ldp/lite')
 var SimpleRDF = require('simplerdf')
 var N3Parser = require('rdf-parser-n3')
 var JsonldParser = require('rdf-parser-jsonld')
@@ -10,9 +11,14 @@ formats.parsers['application/ld+json'] = JsonldParser
 formats.parsers['application/xhtml+xml'] = RdfaParser
 formats.parsers['text/html'] = RdfaParser
 var parser = SimpleRDFParse(formats.parsers)
-
 SimpleRDF.parse = parser.parse.bind(parser)
-exports.SimpleRDF = SimpleRDF
+
+var storeFormats = {parsers:{}}
+storeFormats.parsers['text/turtle'] = N3Parser
+storeFormats.parsers['application/ld+json'] = JsonldParser
+storeFormats.parsers['application/xhtml+xml'] = RdfaParser
+storeFormats.parsers['text/html'] = RdfaParser
+RDFstore = new LdpStore(storeFormats)
 
 var fs = require('fs');
 var path = require('path');
