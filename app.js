@@ -104,8 +104,6 @@ app.use(function(req, res, next) {
   return next();
 });
 
-//app.set('etag', 'strong')
-
 app.route('/').all(getTarget);
 app.route('/index.html').all(getTarget);
 app.route('/inbox/:id?').all(handleResource);
@@ -248,47 +246,6 @@ function getTarget(req, res, next){
       }
     });
   });
-}
-
-//From https://github.com/linkeddata/dokieli/scripts/do.js
-function getGraphFromData(data, options) {
-  options = options || {};
-  if (!('contentType' in options)) {
-    options['contentType'] = 'text/turtle';
-  }
-  if (!('subjectURI' in options)) {
-    options['subjectURI'] = '_:dokieli';
-  }
-
-  return SimpleRDF.parse(data, options['contentType'], options['subjectURI']);
-}
-
-function getGraph(url) {
-    return SimpleRDF({}, url, null, RDFstore).get();
-}
-
-function serializeGraph(g, options) {
-  options = options || {};
-  if (!('contentType' in options)) {
-    options['contentType'] = 'text/turtle';
-  }
-
-  return RDFstore.serializers[options.contentType].serialize(g._graph);
-}
-
-function serializeData(data, fromContentType, toContentType, options) {
-  var o = {
-    'contentType': fromContentType,
-    'subjectURI': options.subjectURI
-  };
-  return getGraphFromData(data, o).then(
-    function(g) {
-      return serializeGraph(g, { 'contentType': toContentType });
-    },
-    function(reason) {
-      return Promise.reject(reason);
-    }
-  );
 }
 
 
@@ -498,7 +455,7 @@ function postContainer(req, res, next){
                   var url = req.getUrl();
                   var base = url.endsWith('/') ? url : url + '/';
                   var location = base + fileName;
-console.log(location);
+// console.log(location);
                   res.set('Location', location);
                   res.status(201);
                   res.send();
@@ -521,7 +478,7 @@ console.log(location);
       }
       else {
         var file = __dirname + '/' + queuePath + fileName;
-console.log(file);
+// console.log(file);
 
         gcDirectory(__dirname + '/' + queuePath);
 
@@ -540,6 +497,32 @@ console.log(file);
     res.status(415);
     res.end();
   }
+}
+
+function deleteResource(path){
+  if (!path) { return; }
+
+  fs.stat(path, function(error, stats) {
+    if (error) {
+      res.status(404);
+      return next();
+    }
+
+    if (stats.isFile()) {
+      if(isWritable(path)){
+        fs.unlink(path, function(error){
+          if (error) {
+            console.log(error);
+          }
+console.log('Delete: ' + path);
+        });
+      }
+    }
+    else {
+      res.status(404);
+      res.end();
+    }
+  });
 }
 
 function gcDirectory(path){
@@ -576,28 +559,43 @@ function isWritable(file) {
   }
 }
 
-function deleteResource(path){
-  if (!path) { return; }
+//From https://github.com/linkeddata/dokieli/scripts/do.js
+function getGraphFromData(data, options) {
+  options = options || {};
+  if (!('contentType' in options)) {
+    options['contentType'] = 'text/turtle';
+  }
+  if (!('subjectURI' in options)) {
+    options['subjectURI'] = '_:dokieli';
+  }
 
-  fs.stat(path, function(error, stats) {
-    if (error) {
-      res.status(404);
-      return next();
-    }
+  return SimpleRDF.parse(data, options['contentType'], options['subjectURI']);
+}
 
-    if (stats.isFile()) {
-      if(isWritable(path)){
-        fs.unlink(path, function(error){
-          if (error) {
-            console.log(error);
-          }
-          console.log('Delete: ' + path);
-        });
-      }
+function getGraph(url) {
+    return SimpleRDF({}, url, null, RDFstore).get();
+}
+
+function serializeGraph(g, options) {
+  options = options || {};
+  if (!('contentType' in options)) {
+    options['contentType'] = 'text/turtle';
+  }
+
+  return RDFstore.serializers[options.contentType].serialize(g._graph);
+}
+
+function serializeData(data, fromContentType, toContentType, options) {
+  var o = {
+    'contentType': fromContentType,
+    'subjectURI': options.subjectURI
+  };
+  return getGraphFromData(data, o).then(
+    function(g) {
+      return serializeGraph(g, { 'contentType': toContentType });
+    },
+    function(reason) {
+      return Promise.reject(reason);
     }
-    else {
-      res.status(404);
-      res.end();
-    }
-  });
+  );
 }
