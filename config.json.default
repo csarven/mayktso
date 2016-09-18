@@ -4,5 +4,6 @@
   "sslCert": "/path/to/cert.pem",
   "inboxPath": "inbox/",
   "queuePath": "queue/",
-  "maxPayloadSize": 1000
+  "maxPayloadSize": 1000,
+  "maxResourceCount": 10
 }
