@@ -68,12 +68,13 @@ $ curl -i -X OPTIONS -H'Accept: application/ld+json' http://localhost:3000/inbox
 
 ## Dependencies
 * [SimpleRDF](https://github.com/simplerdf/simplerdf) (MIT License) used for RDF
-* node libraries for general plumbing
+* [Express](https://github.com/expressjs/express)
+* and other node libraries for general plumbing
 
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-## See also:
+## See also
 * https://www.w3.org/TR/ldp/
 * https://www.w3.org/TR/ldn/
 * https://github.com/solid/node-solid-server
