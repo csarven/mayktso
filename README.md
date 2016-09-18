@@ -1,10 +1,5 @@
 # Mayktso
-
-* Spec repository: https://github.com/csarven/ldn/
-* Latest Published: https://www.w3.org/TR/ldn/
-* Editor's Draft: https://linkedresearch.org/ldn/
-
-An LDN *receiver* is a typical server.
+Encounters with at an endpoint.
 
 ## Receiver
 Runs on http://localhost:3000/ by default:
@@ -65,5 +60,7 @@ $ curl -i -X OPTIONS -H'Accept: application/ld+json' http://localhost:3000/inbox
 ```
 
 See also:
+* https://www.w3.org/TR/ldp/
+* https://www.w3.org/TR/ldn/
 * https://github.com/solid/node-solid-server
 * https://github.com/linkeddata/dokieli
