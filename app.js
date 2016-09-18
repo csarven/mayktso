@@ -37,6 +37,7 @@ var availableTypes = ['application/ld+json', 'text/turtle'];
 // app.use(compress());
 
 app.use(function(req, res, next) {
+  res.header('X-Powered-By', 'https://github.com/csarven/mayktso');
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS, POST");
   if(req.header('Origin')) {
