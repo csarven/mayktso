@@ -21,8 +21,8 @@ storeFormats.parsers['text/html'] = RdfaParser
 RDFstore = new LdpStore(storeFormats)
 
 var fs = require('fs');
-var path = require('path');
-var extname = path.extname;
+// var path = require('path');
+// var extname = path.extname;
 var etag = require('etag');
 var uuid = require('node-uuid');
 var express = require('express');
@@ -33,7 +33,6 @@ var bodyParser = require('body-parser');
 var app = express();
 var accept, requestedType;
 var availableTypes = ['application/ld+json', 'text/turtle'];
-var path;
 
 // app.use(compress());
 
