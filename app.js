@@ -89,18 +89,18 @@ app.use(function(req, res, next) {
   // console.log(req);
   // console.log(res);
 
-  console.log('-----------------');
+  // console.log('-----------------');
   console.log(JSON.stringify(req.headers));
   // console.log('req.protocol: ' + req.protocol);
   // console.log('accept.types(): ' + accept.types());
-  console.log('requestedType: ' + requestedType);
+  // console.log('requestedType: ' + requestedType);
   // console.log(req.body);
   // console.log(req.rawBody);
   // console.log('req.baseUrl: ' + req.baseUrl);
-  console.log('req.originalUrl: ' + req.originalUrl);
+  // console.log('req.originalUrl: ' + req.originalUrl);
   // console.log('req.url: ' + req.url);
-  console.log('req.getUrl: ' + req.getUrl());
-  console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
+  // console.log('req.getUrl: ' + req.getUrl());
+  // console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
   return next();
 });
 
@@ -199,7 +199,7 @@ function getTarget(req, res, next){
         res.set('Vary', 'Origin');
         res.set('Allow', 'GET, HEAD, OPTIONS');
       }
-console.log(accept.type(['text/html']));
+
       if(accept.type(['text/html'])){
         sendHeaders(data, 'text/html');
         res.status(200);
