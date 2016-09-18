@@ -1,5 +1,5 @@
 # Mayktso
-Encounters with at an endpoint.
+Encounters at an endpoint.
 
 ## Receiver
 Runs on http://localhost:3000/ by default:
