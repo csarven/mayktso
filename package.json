@@ -1,7 +1,7 @@
 {
-  "name": "ldn-tests",
+  "name": "mayktso",
   "version": "0.0.1",
-  "description": "Linked Data Notifications tests",
+  "description": "mayktso",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,10 +10,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/csarven/tests.git"
+    "url": "https://github.com/csarven/mayktso.git"
   },
   "keywords": [
-    "ldn"
+    "ldn",
+    "ldp"
   ],
   "author": {
     "name": "Sarven Capadisli",
@@ -21,9 +22,9 @@
   },
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/csarven/ldn-tests/issues"
+    "url": "https://github.com/csarven/mayktso/issues"
   },
-  "homepage": "https://github.com/csarven/ldn-tests",
+  "homepage": "https://github.com/csarven/mayktso",
   "dependencies": {
     "body-parser": "^1.15.2",
     "console-stamp": "^0.2.2",
