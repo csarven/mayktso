@@ -106,9 +106,8 @@ app.use(function(req, res, next) {
 
 //app.set('etag', 'strong')
 
-app.route('/')
-  .get(getTarget)
-  .head(getTarget);
+app.route('/').all(getTarget);
+app.route('/index.html').all(getTarget);
 app.route('/inbox/:id?').all(handleResource);
 app.route('/queue/:id').all(handleResource);
 
@@ -150,29 +149,105 @@ if (!module.parent) {
 }
 
 function getTarget(req, res, next){
-  var path = __dirname + req.originalUrl;
+  switch(req.method){
+    case 'GET': case 'HEAD': case 'OPTIONS':
+      break;
+    default:
+      res.status(405);
+      res.set('Allow', 'GET, HEAD, OPTIONS');
+      res.end();
+      return next();
+      break;
+  }
 
-  var data = JSON.stringify({
-    "@context": "http://www.w3.org/ns/ldp",
-    "@id": "",
-    "inbox": [ { "@id": inboxPath } ]
-  }) + "\n";
-
-  var p = extname(path);
-  var contentType = p.length > 0 ? p : 'application/ld+json; charset=utf-8';
-
-  res.status(200);
-  res.set('Link', '<' + req.getUrl() + inboxPath + '>; rel="http://www.w3.org/ns/ldp#inbox"')
-  res.set('Content-Type', contentType);
-  res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
-  res.set('ETag', etag(data));
-  res.set('Vary', 'Origin');
-  if(req.method === 'HEAD') {
-    res.send();
+  if(!requestedType && !accept.type(['text/html'])) {
+    res.status(406);
+    res.end();
     return next();
   }
-  res.send(data);
-  return next();
+
+  fs.stat(path, function(error, stats) {
+    if (error) {
+      res.status(404);
+      return next();
+    }
+
+    fs.readFile(__dirname + '/index.html', 'utf8', function(error, data){
+      if (error) { console.log(error); }
+
+      if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
+        res.status(304);
+        res.end();
+      }
+
+      baseURI = req.getUrl();
+      var s = baseURI.indexOf('index.html');
+      if (s >= 0) {
+          baseURI = baseURI.substring(0, s);
+      }
+
+      var fromContentType = 'text/html';
+      var toContentType = requestedType;
+      var options = { 'subjectURI': baseURI };
+
+      var sendHeaders = function(outputData, contentType) {
+        res.set('Link', '<' + baseURI + inboxPath + '>; rel="http://www.w3.org/ns/ldp#inbox"')
+        res.set('Content-Type', contentType +'; charset=utf-8');
+        res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
+        res.set('ETag', etag(outputData));
+        res.set('Last-Modified', stats.mtime);
+        res.set('Vary', 'Origin');
+        res.set('Allow', 'GET, HEAD, OPTIONS');
+      }
+console.log(accept.type(['text/html']));
+      if(accept.type(['text/html'])){
+        sendHeaders(data, 'text/html');
+        res.status(200);
+        res.send(data);
+        return next();
+      }
+      else {
+        serializeData(data, fromContentType, toContentType, options).then(
+          function(transformedData){
+            switch(toContentType) {
+              case 'application/ld+json':
+                var x = JSON.parse(transformedData);
+                x[0]["@context"] = ["http://www.w3.org/ns/ldp"];
+                transformedData = JSON.stringify(x);
+                break;
+              default:
+                break;
+            }
+
+            var outputData = (fromContentType != toContentType) ? transformedData : data;
+            sendHeaders(outputData, requestedType);
+
+            switch(req.method) {
+              case 'GET': default:
+                res.status(200);
+                res.send(outputData);
+                break;
+              case 'HEAD':
+                res.status(200);
+                res.send();
+                break;
+              case 'OPTIONS':
+                res.status(204);
+                res.end();
+                break;
+            }
+
+            return next();
+          },
+          function(reason){
+            res.status(500);
+            res.end();
+            return next();
+          }
+        );
+      }
+    });
+  });
 }
 
 //From https://github.com/linkeddata/dokieli/scripts/do.js
@@ -225,9 +300,6 @@ function handleResource(req, res, next){
       break;
     case 'POST':
       postContainer(req, res, next);
-      // res.end();
-      // return next();
-      return;
       break;
     default:
       res.status(405);
@@ -254,7 +326,7 @@ function handleResource(req, res, next){
 // //console.log('-- isReadable: ' + isReadable);
       if (isReadable) {
         fs.readFile(path, 'utf8', function(error, data){
-          if (error) throw error;
+          if (error) { console.log(error); }
 
           if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
             res.status(304);
@@ -295,7 +367,6 @@ function handleResource(req, res, next){
                     break;
                   case 'OPTIONS':
                     res.status(204);
-//                    res.set('Allow', 'GET, HEAD, OPTIONS');
                     res.end();
                     break;
                 }
