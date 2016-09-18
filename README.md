@@ -3,10 +3,10 @@ Encounters at an endpoint.
 
 ## Status
 Preliminary HTTP server. Originally intended to be a compliant
-(LDN receiver)[https://www.w3.org/TR/ldn#receiving] but will extend so it is LDP
+[LDN receiver](https://www.w3.org/TR/ldn#receiving) but will extend so it is LDP
 compliant, do authentication/authorisation.. and other fancy standards stuff.
 
-Next plans: see (issues)[https://github.com/csarven/mayktso/issues].
+Next plans: see [issues](https://github.com/csarven/mayktso/issues).
 
 ## Receiver
 Runs on http://localhost:3000/ by default:
