@@ -446,16 +446,17 @@ function postContainer(req, res, next){
         if(stats.isDirectory()) {
             gcDirectory(path);
 
-            SimpleRDF.parse(data, contentType, '_:ldn').then(
-              function(g) {
-                var file = path + fileName;
+            var file = path + fileName;
   //console.log(file);
+            var url = req.getUrl();
+            var base = url.endsWith('/') ? url : url + '/';
+            var uri = base + fileName;
+
+            SimpleRDF.parse(data, contentType, uri).then(
+              function(g) {
                 fs.appendFile(file, data, function() {
-                  var url = req.getUrl();
-                  var base = url.endsWith('/') ? url : url + '/';
-                  var location = base + fileName;
-// console.log(location);
-                  res.set('Location', location);
+// console.log(uri);
+                  res.set('Location', uri);
                   res.status(201);
                   res.send();
                   res.end();
