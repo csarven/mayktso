@@ -255,7 +255,7 @@ function handleResource(req, res, next){
     case 'GET': case 'HEAD': case 'OPTIONS':
       break;
     case 'POST':
-      postContainer(req, res, next);
+      return postContainer(req, res, next);
       break;
     default:
       res.status(405);
