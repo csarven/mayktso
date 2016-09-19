@@ -108,6 +108,7 @@ app.route('/').all(getTarget);
 app.route('/index.html').all(getTarget);
 app.route('/inbox/:id?').all(handleResource);
 app.route('/queue/:id').all(handleResource);
+app.route('/annotation/:id').all(handleResource);
 
 if (!module.parent) {
   var config;
@@ -359,10 +360,10 @@ function handleResource(req, res, next){
           contains.push({ "@id": file });
         }
 
+//          "@context": "http://www.w3.org/ns/ldp",
         var data = JSON.stringify({
-          "@context": "http://www.w3.org/ns/ldp",
           "@id": "",
-          "contains": contains
+          "http://www.w3.org/ns/ldp#contains": contains
         }) + "\n";
 
         var respond = function() {
@@ -374,6 +375,7 @@ function handleResource(req, res, next){
               var fromContentType = 'application/ld+json';
               var toContentType = requestedType;
               var options = { 'subjectURI': req.getUrl() };
+
               return serializeData(data, fromContentType, toContentType, options).then(
                 function(i) { resolve(i); },
                 function(j) { reject(j); }
