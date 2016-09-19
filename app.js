@@ -46,8 +46,8 @@ app.use(function(req, res, next) {
   else {
     res.header("Access-Control-Allow-Origin", "*");
   }
-  res.header("Access-Control-Allow-Headers", "Accept-Post, Content-Length, Content-Type, If-None-Match, Link, Location, Origin, Slug, X-Requested-With");
-   res.header("Access-Control-Expose-Headers", "Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Allow, Content-Length, Content-Type, Link, Last-Modified, ETag, Vary");
+  res.header("Access-Control-Allow-Headers", "Content-Length, Content-Type, If-None-Match, Link, Location, Origin, Slug, X-Requested-With");
+   res.header("Access-Control-Expose-Headers", "Access-Control-Allow-Headers, Access-Control-Allow-Origin, Access-Control-Allow-Methods, Accept-Post, Allow, Content-Length, Content-Type, Link, Last-Modified, ETag, Vary");
   return next();
 });
 
