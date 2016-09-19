@@ -29,6 +29,7 @@ var express = require('express');
 var https = require('https');
 var http = require('http');
 var accepts = require('accepts');
+var contentType = require('content-type');
 var bodyParser = require('body-parser');
 var app = express();
 var accept, requestedType;
@@ -431,7 +432,7 @@ function handleResource(req, res, next){
 
 function postContainer(req, res, next){
   var data = req.rawBody;
-  var contentType = req.header('Content-Type');
+  var mediaType = contentType.parse(req.headers['content-type']).type;
 
   if(req.is('application/ld+json') || req.is('text/turtle')) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
@@ -456,7 +457,7 @@ function postContainer(req, res, next){
             var base = url.endsWith('/') ? url : url + '/';
             var uri = base + fileName;
 
-            SimpleRDF.parse(data, contentType, uri).then(
+            SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
                 fs.appendFile(file, data, function() {
 // console.log(uri);
