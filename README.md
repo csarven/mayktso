@@ -22,6 +22,7 @@ Optional config use: `cp config.json.default cp config.json`
   "port": "3000",
   "sslKey": "/path/to/privkey.pem",
   "sslCert": "/path/to/cert.pem",
+  "basePath": "",
   "inboxPath": "inbox/",
   "queuePath": "queue/",
   "maxPayloadSize": 1000,
@@ -30,6 +31,12 @@ Optional config use: `cp config.json.default cp config.json`
 ```
 
 * Defaults will be used for omitted key/values (except sslKey/Cert are unused)
+* base path is useful when running as a reverse proxy in a dedicated directory:
+```
+ProxyPass /foo/ https://localhost:3000/
+ProxyPassReverse /foo/ https://localhost:3000/
+```
+so that http://example.org/foo/bar resolves, otherwise, server only sees /bar
 * inbox and queue paths are relative to root e.g., http://localhost:3000/inbox/
 * queue/ is used for HTTP 202 responses (default for payload above 1000 bytes)
 * maxPayloadSize is for POSTs (as the name suggests)

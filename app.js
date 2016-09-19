@@ -60,7 +60,7 @@ app.use(bodyParser.raw({ verify: rawBodySaver, type: '*/*' }));
 
 app.use(function(req, res, next) {
   req.getUrl = function() {
-    return req.protocol + "://" + req.header('host') + req.originalUrl;
+    return req.protocol + "://" + req.header('host') + config['basePath'] + req.originalUrl;
   }
   return next();
 });
@@ -119,6 +119,7 @@ if (!module.parent) {
     config['queuePath'] = config.queuePath || 'queue/';
     config['maxPayloadSize'] = config.maxPayloadSize || 1000;
     config['maxResourceCount'] = config.maxResourceCount || 10;
+    config['basePath'] = config.basePath || '';
     console.log(config);
 
     var scheme = 'http';
