@@ -359,12 +359,12 @@ function handleResource(req, res, next){
         var contains = [];
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
-          contains.push({ "@id": file });
+          contains.push({ "@id": req.getUrl() + file });
         }
 
 //          "@context": "http://www.w3.org/ns/ldp",
         var data = JSON.stringify({
-          "@id": "",
+          "@id": req.getUrl(),
           "http://www.w3.org/ns/ldp#contains": contains
         }) + "\n";
 
