@@ -489,6 +489,7 @@ function postContainer(req, res, next){
 
         fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available.\n', function() {
           res.status(202);
+          res.set('Content-Language', 'en');
           res.set('Content-Type', 'text/plain; charset=utf-8');
           var location = req.protocol + '://' + req.headers.host + '/queue/' + fileName;
           res.send('Your request is being processed. Check status: ' + location + '\n');
