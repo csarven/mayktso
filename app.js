@@ -193,7 +193,7 @@ function getTarget(req, res, next){
 
       var sendHeaders = function(outputData, contentType) {
         res.set('Link', '<' + baseURI + inboxPath + '>; rel="http://www.w3.org/ns/ldp#inbox"')
-        res.set('Content-Type', contentType +'; charset=utf-8');
+        res.set('Content-Type', contentType +';charset=utf-8');
         res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
         res.set('ETag', etag(outputData));
         res.set('Last-Modified', stats.mtime);
@@ -309,7 +309,7 @@ function handleResource(req, res, next){
               function(transformedData){
                 var outputData = (fromContentType != toContentType) ? transformedData : data;
 
-                res.set('Content-Type', requestedType +'; charset=utf-8');
+                res.set('Content-Type', requestedType +';charset=utf-8');
                 res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
                 res.set('ETag', etag(outputData));
                 res.set('Last-Modified', stats.mtime);
@@ -394,7 +394,7 @@ function handleResource(req, res, next){
               return next();
             }
 
-            res.set('Content-Type', requestedType + '; charset=utf-8');
+            res.set('Content-Type', requestedType + ';charset=utf-8');
             res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
             res.set('ETag', etag(data));
             res.set('Last-Modified', stats.mtime);
@@ -490,7 +490,7 @@ function postContainer(req, res, next){
         fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available.\n', function() {
           res.status(202);
           res.set('Content-Language', 'en');
-          res.set('Content-Type', 'text/plain; charset=utf-8');
+          res.set('Content-Type', 'text/plain;charset=utf-8');
           var location = req.protocol + '://' + req.headers.host + '/queue/' + fileName;
           res.send('Your request is being processed. Check status: ' + location + '\n');
           res.end();
