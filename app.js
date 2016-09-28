@@ -588,7 +588,7 @@ function getGraphFromData(data, options) {
 }
 
 function getGraph(url) {
-    return SimpleRDF({}, url, null, RDFstore).get();
+    return SimpleRDF(vocab, url, null, RDFstore).get();
 }
 
 function serializeGraph(g, options) {
