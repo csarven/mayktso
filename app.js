@@ -659,3 +659,11 @@ function encodeString(string) {
 function decodeString(string) {
   return decodeURIComponent(string.replace(/\+/g,  " "));
 }
+
+function getProxyableIRI(url) {
+  var pIRI = stripFragmentFromString(url);
+  if (typeof document !== 'undefined' && document.location.protocol == 'https:' && pIRI.slice(0, 5).toLowerCase() == 'http:') {
+      pIRI = proxyURL + encodeString(pIRI);
+  }
+  return pIRI;
+}
