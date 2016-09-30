@@ -729,6 +729,39 @@ function getResourceHead(url, options) {
   });
 }
 
+function getEndpointFromRDF(property, url, subjectIRI) {
+  url = url || window.location.origin + window.location.pathname;
+  subjectIRI = subjectIRI || url;
+  var pIRI = getProxyableIRI(url);
+
+console.log('GET ' + pIRI);
+
+  //FIXME: This doesn't work so well if the document's URL is different than input url
+  return getGraph(pIRI)
+      .then(
+          function(i) {
+              var s = i.child(subjectIRI);
+//console.log(s.toString());
+//console.log(s.ldpinbox);
+console.log('  Checking ' + subjectIRI + ' for ' + property);
+              switch(property) {
+                  case vocab['ldpinbox']['@id']:
+                      if (s.ldpinbox._array.length > 0){
+                          return [s.ldpinbox._array[0]];
+                      }
+                      break;
+              }
+
+              var reason = {"message": property + " endpoint was not found in message body"};
+              return Promise.reject(reason);
+          },
+          function(reason) {
+console.log(reason);
+              return reason;
+          }
+      );
+}
+
 function getNotifications(url) {
   url = url || window.location.origin + window.location.pathname;
   var notifications = [];
