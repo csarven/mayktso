@@ -667,3 +667,14 @@ function getProxyableIRI(url) {
   }
   return pIRI;
 }
+
+function stripFragmentFromString(string) {
+  if (typeof string === "string") {
+      var stringIndexFragment = string.indexOf('#');
+
+      if (stringIndexFragment >= 0) {
+          string = string.substring(0, stringIndexFragment);
+      }
+  }
+  return string;
+}
