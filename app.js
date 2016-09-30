@@ -34,6 +34,7 @@ var bodyParser = require('body-parser');
 var app = express();
 var accept, requestedType;
 var availableTypes = ['application/ld+json', 'text/turtle'];
+var mayktsoURI = 'https://github.com/csarven/mayktso';
 
 var vocab = {
   "rdftype": { "@id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "@type": "@id", "@array": true },
@@ -47,7 +48,7 @@ var vocab = {
 // app.use(compress());
 
 app.use(function(req, res, next) {
-  res.header('X-Powered-By', 'https://github.com/csarven/mayktso');
+  res.header('X-Powered-By', mayktsoURI);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS, POST");
   if(req.header('Origin')) {
