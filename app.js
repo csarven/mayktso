@@ -132,6 +132,7 @@ if (!module.parent) {
     config['maxPayloadSize'] = config.maxPayloadSize || 1000;
     config['maxResourceCount'] = config.maxResourceCount || 10;
     config['basePath'] = config.basePath || '';
+    config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
     console.log(config);
 
     var scheme = 'http';
@@ -154,6 +155,7 @@ if (!module.parent) {
     queuePath = config.queuePath;
     maxPayloadSize = config.maxPayloadSize;
     maxResourceCount = config.maxResourceCount;
+    proxyURL = config.proxyURL;
 
     console.log('process.cwd(): ' + process.cwd());
     console.log('curl -i ' + authority);
