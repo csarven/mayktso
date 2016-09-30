@@ -28,6 +28,7 @@ var uuid = require('node-uuid');
 var express = require('express');
 var https = require('https');
 var http = require('http');
+var XMLHttpRequest = require('xhr2');
 var accepts = require('accepts');
 var contentType = require('content-type');
 var bodyParser = require('body-parser');
