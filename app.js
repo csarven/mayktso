@@ -163,6 +163,115 @@ if (!module.parent) {
   });
 }
 
+function processArgs(){
+  console.log(argv);
+  if('help' in argv) {
+    console.log('mayktso: ' + mayktsoURI);
+    console.log('  * Running without parameter/option starts server, otherwise:');
+    console.log('  * Usage: node app.js [parameter] [options]');
+    console.log('    [parameter]');
+    console.log('    --help');
+    console.log("    --discoverInbox <URI>           Discover a target's Inbox");
+    console.log("    --getInbox <URI                 Get an Inbox's contents");
+    console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
+//    console.log('    --postInbox <URI> [options]     Send notification to Inbox');
+    console.log('    [options]');
+    console.log('    --accept (mimetype, default: application/ld+json)');
+    console.log('    --contentType (mimetype[;charset][;profile], default: application/ld+json)');
+    console.log('    --data string');
+    console.log('    --outputType (mimetype, default: application/ld+json)')
+  }
+
+  else if('discoverInbox' in argv){
+    discoverInbox(argv['discoverInbox']);
+  }
+  else if ('getInbox' in argv){
+    getInbox(argv['getInbox']);
+  }
+  else if ('getResource' in argv){
+    getResourceArgv(argv['getResource']);
+  }
+  // else if ('postInbox' in argv){
+  //   postInbox(argv['postInbox']);
+  // }
+}
+
+function discoverInbox(url){
+  url = url || argv['discoverInbox'];
+  if (url.slice(0,4) != 'http') {
+    process.exit(1);
+  }
+
+  getEndpoint(vocab['ldpinbox']['@id'], url).then(
+    function(i){
+      console.log('Found:');
+      console.dir(i);
+    },
+    function(reason){
+      console.log('Not Found:');
+      console.dir(reason);
+    }
+  );
+}
+
+function getInbox(url){
+  url = url || argv['getInbox'];
+  if (url.slice(0,4) != 'http') {
+    process.exit(1);
+  }
+
+  getNotifications(url).then(
+    function(i){
+      console.log('Found:');
+      console.dir(i);
+    },
+    function(reason){
+      console.log('Not Found:');
+      console.dir(reason);
+    }
+  );
+}
+
+function getResourceArgv(url){
+  url = url || argv['getResource'];
+  if (url.slice(0,4) != 'http') {
+    process.exit(1);
+  }
+  var pIRI = getProxyableIRI(url);
+
+  var headers = {};
+  headers['Accept'] = ('accept' in argv) ? argv['accept'] : 'application/ld+json';
+
+  getResource(pIRI, headers).then(
+    function(response){
+      console.log(response.xhr.getAllResponseHeaders());
+      console.log('');
+      data = response.xhr.responseText;
+      var toContentType = ('outputType' in argv) ? argv['outputType'] : headers['Accept'];
+      var options = { 'subjectURI': url };
+
+      if(headers['Accept'] != toContentType) {
+        serializeData(data, headers['Accept'], toContentType, options).then(
+          function(transformedData){
+            console.log(transformedData);
+          },
+          function(reason) {
+            console.log('Error:');
+            console.dir(reason);
+          }
+        );
+      }
+      else {
+        console.log(data);
+      }
+    },
+    function(reason){
+      console.log('Not Found:');
+      console.dir(reason);
+    }
+  );
+}
+
 function getTarget(req, res, next){
   switch(req.method){
     case 'GET': case 'HEAD': case 'OPTIONS':
