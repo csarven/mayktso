@@ -123,7 +123,10 @@ app.route('/inbox/:id?').all(handleResource);
 app.route('/queue/:id').all(handleResource);
 app.route('/annotation/:id').all(handleResource);
 
-if (!module.parent) {
+if (process.argv.length > 2) {
+  processArgs();
+}
+else if(!module.parent) {
   var config;
   fs.readFile(__dirname + '/config.json', 'utf8', function(error, file){
     config = (error) ? {} : JSON.parse(file);
