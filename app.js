@@ -728,3 +728,43 @@ function getResourceHead(url, options) {
       http.send();
   });
 }
+
+function getNotifications(url) {
+  url = url || window.location.origin + window.location.pathname;
+  var notifications = [];
+  var pIRI = getProxyableIRI(url);
+
+  return getGraph(pIRI).then(
+    function(i) {
+        var s = i.child(url);
+
+        s.ldpcontains.forEach(function(resource) {
+            resource = resource.toString();
+// console.log(resource);
+            var types = s.child(resource).rdftype;
+// console.log(types);
+            var resourceTypes = [];
+            types.forEach(function(type){
+                resourceTypes.push(type.toString());
+// console.log(type);
+            });
+
+            if(resourceTypes.indexOf(vocab.ldpcontainer["@id"]) < 0) {
+                notifications.push(resource);
+            }
+        });
+// console.log(notifications);
+        if (notifications.length > 0) {
+            return notifications;
+        }
+        else {
+            var reason = {"message": "There are no notifications."};
+            return Promise.reject(reason);
+        }
+    },
+    function(reason) {
+        console.log(reason);
+        return reason;
+    }
+  );
+}
