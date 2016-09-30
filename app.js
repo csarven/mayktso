@@ -20,6 +20,7 @@ storeFormats.parsers['application/xhtml+xml'] = RdfaParser
 storeFormats.parsers['text/html'] = RdfaParser
 RDFstore = new LdpStore(storeFormats)
 
+var argv = require('minimist')(process.argv.slice(2));
 var fs = require('fs');
 // var path = require('path');
 // var extname = path.extname;
