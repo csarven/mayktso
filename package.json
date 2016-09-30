@@ -32,10 +32,12 @@
     "etag": "^1.7.0",
     "express": "^4.14.0",
     "fs": "0.0.1-security",
+    "minimist": "^1.2.0",
     "node-uuid": "^1.4.7",
     "rdf-parser-rdfa": "git://github.com/rdf-ext/rdf-parser-rdfa.git#master",
     "rdf-store-ldp": "git://github.com/rdf-ext/rdf-store-ldp.git#master",
     "simplerdf": "^0.2.14",
-    "simplerdf-parse": "git://github.com/nicola/simplerdf-parse.git#master"
+    "simplerdf-parse": "git://github.com/nicola/simplerdf-parse.git#master",
+    "xmlhttprequest": "^1.8.0"
   }
 }
