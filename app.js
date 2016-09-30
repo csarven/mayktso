@@ -369,12 +369,16 @@ function handleResource(req, res, next){
         var contains = [];
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
-          contains.push({ "@id": req.getUrl() + file });
+          contains.push({
+            "@id": req.getUrl() + file,
+            "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource' ]
+          });
         }
 
 //          "@context": "http://www.w3.org/ns/ldp",
         var data = JSON.stringify({
           "@id": req.getUrl(),
+          "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource', 'http://www.w3.org/ns/ldp#Container', 'http://www.w3.org/ns/ldp#BasicContainer' ],
           "http://www.w3.org/ns/ldp#contains": contains
         }) + "\n";
 
@@ -404,6 +408,7 @@ function handleResource(req, res, next){
               return next();
             }
 
+            res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type", <http://www.w3.org/ns/ldp#Container>; rel="type", <http://www.w3.org/ns/ldp#BasicContainer>; rel="type"');
             res.set('Content-Type', requestedType + ';charset=utf-8');
             res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
             res.set('ETag', etag(data));
