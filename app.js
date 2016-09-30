@@ -679,6 +679,32 @@ function stripFragmentFromString(string) {
   return string;
 }
 
+function getResource(url, headers) {
+  url = url || window.location.origin + window.location.pathname;
+  headers = headers || {};
+  if(typeof headers['Accept'] == 'undefined') {
+      headers['Accept'] = 'application/ld+json';
+  }
+
+  return new Promise(function(resolve, reject) {
+      var http = new XMLHttpRequest();
+      http.open('GET', url);
+      Object.keys(headers).forEach(function(key) {
+          http.setRequestHeader(key, headers[key]);
+      });
+//      http.withCredentials = true;
+      http.onreadystatechange = function() {
+          if (this.readyState == this.DONE) {
+              if (this.status === 200) {
+                  return resolve({xhr: this});
+              }
+              return reject({status: this.status, xhr: this});
+          }
+      };
+      http.send();
+  });
+}
+
 function getResourceHead(url, options) {
   url = url || ((typeof window !== 'undefined') ? window.location.origin + window.location.pathname : '');
   options = options || {};
