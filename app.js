@@ -651,3 +651,11 @@ function parseLinkHeader(link) {
   }
   return rels;
 }
+
+function encodeString(string) {
+  return encodeURIComponent(string).replace(/'/g,"%27").replace(/"/g,"%22");
+}
+
+function decodeString(string) {
+  return decodeURIComponent(string.replace(/\+/g,  " "));
+}
