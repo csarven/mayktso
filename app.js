@@ -729,6 +729,20 @@ function getResourceHead(url, options) {
   });
 }
 
+function getEndpoint(property, url) {
+  if (url) {
+      return getEndpointFromHead(property, url).then(
+          function(i){
+              return i;
+          },
+          function(x){
+console.log(x);
+              return getEndpointFromRDF(property, url);
+          }
+      );
+  }
+}
+
 function getEndpointFromHead(property, url) {
   var pIRI = getProxyableIRI(url);
   console.log('HEAD ' + pIRI);
