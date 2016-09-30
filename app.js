@@ -729,6 +729,28 @@ function getResourceHead(url, options) {
   });
 }
 
+function getEndpointFromHead(property, url) {
+  var pIRI = getProxyableIRI(url);
+  console.log('HEAD ' + pIRI);
+
+  return getResourceHead(pIRI, {'header': 'Link'}).then(
+      function(i){
+          var linkHeaders = parseLinkHeader(i.headers);
+console.log('  Checking for ' + property);
+          if (property in linkHeaders) {
+              return linkHeaders[property];
+          }
+          else if (property == 'http://www.w3.org/ns/ldp#inbox' && 'http://www.w3.org/ns/solid/terms#inbox' in linkHeaders) {
+              return linkHeaders['http://www.w3.org/ns/solid/terms#inbox'];
+          }
+          return Promise.reject({'message': property + " endpoint was not found in 'Link' header"});
+      },
+      function(reason){
+          return Promise.reject({'message': "'Link' header not found"});
+      }
+  );
+}
+
 function getEndpointFromRDF(property, url, subjectIRI) {
   url = url || window.location.origin + window.location.pathname;
   subjectIRI = subjectIRI || url;
