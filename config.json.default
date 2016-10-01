@@ -2,6 +2,7 @@
   "port": "3000",
   "sslKey": "/path/to/privkey.pem",
   "sslCert": "/path/to/cert.pem",
+  "proxyURL": "https://dokie.li/proxy?uri=",
   "basePath": "",
   "inboxPath": "inbox/",
   "queuePath": "queue/",
