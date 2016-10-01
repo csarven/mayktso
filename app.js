@@ -201,10 +201,10 @@ function help() {
   console.log('    --postInbox <URI> [options]     Send notification to Inbox');
   console.log('    [options]');
   console.log('    --accept (mimetype, default: application/ld+json)');
-  console.log('    --contentType (mimetype[;charset][;profile], default: application/ld+json)');
+  console.log('    --contentType (mimetype, default: application/ld+json)');
   console.log('    --slug string');
   console.log('    -d, --data <data>');
-  console.log('    -o, --outputType (mimetype, default: application/ld+json)');
+  console.log('    -o, --outputType (mimetype or format[eg jsonld, turtle], default: application/ld+json)');
 }
 
 function discoverInbox(url){
