@@ -177,10 +177,11 @@ function processArgs(){
     console.log("    --discoverInbox <URI>           Discover a target's Inbox");
     console.log("    --getInbox <URI                 Get an Inbox's contents");
     console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
-//    console.log('    --postInbox <URI> [options]     Send notification to Inbox');
+    console.log('    --postInbox <URI> [options]     Send notification to Inbox');
     console.log('    [options]');
     console.log('    --accept (mimetype, default: application/ld+json)');
     console.log('    --contentType (mimetype[;charset][;profile], default: application/ld+json)');
+    console.log('    --slug string');
     console.log('    --data string');
     console.log('    --outputType (mimetype, default: application/ld+json)')
   }
