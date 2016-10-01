@@ -260,7 +260,7 @@ function getResourceArgv(url){
       data = response.xhr.responseText;
 
       var toContentType;
-      if ('outputType' in argv && argv['outputType'] !== ''){
+      if ('outputType' in argv && argv['outputType'] !== '' && (argv['o'] == 'text/turtle' || argv['o'] == 'application/ld+json')){
         toContentType = argv['outputType'];
       }
       else if('o' in argv && argv['o'].length > 0 && (argv['o'] == 'text/turtle' || argv['o'] == 'application/ld+json')){
@@ -269,6 +269,8 @@ function getResourceArgv(url){
       else {
         toContentType = headers['Accept'];
       }
+
+      toContentType = formatToMimeType(toContentType.toLowerCase());
 
       var options = { 'subjectURI': url };
 
