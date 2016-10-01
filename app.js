@@ -739,6 +739,16 @@ function isWritable(file) {
   }
 }
 
+function fileExists(filepath){
+  let flag = true;
+  try{
+    fs.accessSync(filepath, fs.F_OK);
+  }catch(e){
+    flag = false;
+  }
+  return flag;
+}
+
 //From https://github.com/linkeddata/dokieli/scripts/do.js
 function getGraphFromData(data, options) {
   options = options || {};
