@@ -772,6 +772,17 @@ function fileExists(filepath){
   return flag;
 }
 
+function formatToMimeType(format){
+  switch(format){
+    case 'jsonld':
+      return 'application/ld+json';
+    case 'turtle':
+      return 'text/turtle';
+    default:
+      return format;
+  }
+}
+
 //From https://github.com/linkeddata/dokieli/scripts/do.js
 function getGraphFromData(data, options) {
   options = options || {};
