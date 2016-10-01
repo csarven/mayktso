@@ -610,7 +610,14 @@ function postContainer(req, res, next){
   if(req.is('application/ld+json') || req.is('text/turtle')) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < maxPayloadSize) ? true : false;
-    var fileName = uuid.v1();
+
+    var fileName;
+    if(req.headers['slug'] && req.headers['slug'].length > 0 && !fileExists(path + req.headers['slug'])) {
+      fileName = req.headers['slug'];
+    }
+    else {
+      fileName = uuid.v1();
+    }
 
     fs.stat(path, function(error, stats) {
       if(error) {
