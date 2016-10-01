@@ -194,9 +194,9 @@ function processArgs(){
   else if ('getResource' in argv){
     getResourceArgv(argv['getResource']);
   }
-  // else if ('postInbox' in argv){
-  //   postInbox(argv['postInbox']);
-  // }
+  else if ('postInbox' in argv){
+    postInboxArgv(argv['postInbox']);
+  }
 }
 
 function discoverInbox(url){
