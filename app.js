@@ -183,7 +183,7 @@ function processArgs(){
     console.log('    --contentType (mimetype[;charset][;profile], default: application/ld+json)');
     console.log('    --slug string');
     console.log('    -d, --data <data>');
-    console.log('    --outputType (mimetype, default: application/ld+json)')
+    console.log('    -o, --outputType (mimetype, default: application/ld+json)')
   }
 
   else if('discoverInbox' in argv){
@@ -251,7 +251,18 @@ function getResourceArgv(url){
       console.log(response.xhr.getAllResponseHeaders());
       console.log('');
       data = response.xhr.responseText;
-      var toContentType = ('outputType' in argv) ? argv['outputType'] : headers['Accept'];
+
+      var toContentType;
+      if ('outputType' in argv && argv['outputType'] !== ''){
+        toContentType = argv['outputType'];
+      }
+      else if('o' in argv && argv['o'].length > 0 && (argv['o'] == 'text/turtle' || argv['o'] == 'application/ld+json')){
+        toContentType = argv['o'];
+      }
+      else {
+        toContentType = headers['Accept'];
+      }
+
       var options = { 'subjectURI': url };
 
       if(headers['Accept'] != toContentType) {
