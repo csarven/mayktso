@@ -795,6 +795,41 @@ function stripFragmentFromString(string) {
   return string;
 }
 
+function postResource(url, slug, data, contentType, links, options) {
+  if (url && url.length > 0) {
+      contentType = contentType || 'text/html; charset=utf-8';
+      var ldpResource = '<http://www.w3.org/ns/ldp#Resource>; rel="type"';
+      links = (links) ? ldpResource + ', ' + links : ldpResource;
+      options = options || {};
+
+      return new Promise(function(resolve, reject) {
+          var http = new XMLHttpRequest();
+          http.open('POST', url);
+          http.setRequestHeader('Content-Type', contentType);
+          http.setRequestHeader('Link', links);
+          if (slug && slug.length > 0) {
+              http.setRequestHeader('Slug', slug);
+          }
+          // if (!options.noCredentials) {
+          //     http.withCredentials = true;
+          // }
+          http.onreadystatechange = function() {
+              if (this.readyState == this.DONE) {
+                  if (this.status === 200 || this.status === 201 || this.status === 204) {
+                      return resolve({xhr: this});
+                  }
+                  return reject({status: this.status, xhr: this});
+              }
+          };
+          http.send(data);
+      });
+  }
+  else {
+      return Promise.reject({'message': 'url parameter not valid'});
+  }
+}
+
+
 function getResource(url, headers) {
   url = url || window.location.origin + window.location.pathname;
   headers = headers || {};
