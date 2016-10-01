@@ -169,21 +169,7 @@ else if(!module.parent) {
 function processArgs(){
   console.log(argv);
   if('help' in argv) {
-    console.log('mayktso: ' + mayktsoURI);
-    console.log('  * Running without parameter/option starts server, otherwise:');
-    console.log('  * Usage: node app.js [parameter] [options]');
-    console.log('    [parameter]');
-    console.log('    --help');
-    console.log("    --discoverInbox <URI>           Discover a target's Inbox");
-    console.log("    --getInbox <URI                 Get an Inbox's contents");
-    console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
-    console.log('    --postInbox <URI> [options]     Send notification to Inbox');
-    console.log('    [options]');
-    console.log('    --accept (mimetype, default: application/ld+json)');
-    console.log('    --contentType (mimetype[;charset][;profile], default: application/ld+json)');
-    console.log('    --slug string');
-    console.log('    -d, --data <data>');
-    console.log('    -o, --outputType (mimetype, default: application/ld+json)')
+    help();
   }
 
   else if('discoverInbox' in argv){
@@ -198,6 +184,27 @@ function processArgs(){
   else if ('postInbox' in argv){
     postInboxArgv(argv['postInbox']);
   }
+  else {
+    help();
+  }
+}
+
+function help() {
+  console.log('mayktso: ' + mayktsoURI);
+  console.log('  * Running without parameter/option starts server, otherwise:');
+  console.log('  * Usage: node app.js [parameter] [options]');
+  console.log('    [parameter]');
+  console.log('    --help');
+  console.log("    --discoverInbox <URI>           Discover a target's Inbox");
+  console.log("    --getInbox <URI                 Get an Inbox's contents");
+  console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
+  console.log('    --postInbox <URI> [options]     Send notification to Inbox');
+  console.log('    [options]');
+  console.log('    --accept (mimetype, default: application/ld+json)');
+  console.log('    --contentType (mimetype[;charset][;profile], default: application/ld+json)');
+  console.log('    --slug string');
+  console.log('    -d, --data <data>');
+  console.log('    -o, --outputType (mimetype, default: application/ld+json)');
 }
 
 function discoverInbox(url){
