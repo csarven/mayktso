@@ -629,17 +629,15 @@ function postContainer(req, res, next){
 
       if(createRequest) {
         if(stats.isDirectory()) {
-            gcDirectory(path);
-
             var file = path + fileName;
-  //console.log(file);
             var url = req.getUrl();
             var base = url.endsWith('/') ? url : url + '/';
             var uri = base + fileName;
 
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
-                fs.appendFile(file, data, function() {
+                gcDirectory(path);
+                fs.appendFile(file, data, function(x) {
 // console.log(uri);
                   res.set('Location', uri);
                   res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
