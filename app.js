@@ -251,7 +251,7 @@ function getResourceArgv(url){
   var pIRI = getProxyableIRI(url);
 
   var headers = {};
-  headers['Accept'] = ('accept' in argv) ? argv['accept'] : 'application/ld+json';
+  headers['Accept'] = ('accept' in argv) ? (formatToMimeType(argv['accept'])) : 'application/ld+json';
 
   getResource(pIRI, headers).then(
     function(response){
