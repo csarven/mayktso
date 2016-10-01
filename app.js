@@ -624,6 +624,7 @@ function postContainer(req, res, next){
                 fs.appendFile(file, data, function() {
 // console.log(uri);
                   res.set('Location', uri);
+                  res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
                   res.status(201);
                   res.send();
                   res.end();
