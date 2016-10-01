@@ -275,6 +275,36 @@ function getResourceArgv(url){
   );
 }
 
+function postInboxArgv(url){
+  url = url || argv['postInbox'];
+  if (url.slice(0,4) != 'http') {
+    process.exit(1);
+  }
+  var pIRI = getProxyableIRI(url);
+
+  var headers = {};
+  headers['Slug'] = ('slug' in argv) ? argv['slug'] : '';
+  headers['Content-Type'] = ('contentType' in argv) ? argv['contentType'] : 'application/ld+json';
+
+  if ('data' in argv && argv['data'] !== ''){
+    postResource(pIRI, headers['Slug'], argv['data'], headers['Content-Type']).then(
+      function(response){
+//        console.log(response.xhr);
+        console.log('HTTP/1.1 ' + response.xhr.status + ' ' + response.xhr.statusText);
+        console.log(response.xhr.getAllResponseHeaders());
+        console.log('');
+        if(response.xhr.responseText.lenth > 0){
+          console.log(response.xhr.responseText);
+        }
+      },
+      function(reason){
+        console.log('Not Found:');
+        console.dir(reason);
+      }
+    );
+  }
+}
+
 function getTarget(req, res, next){
   switch(req.method){
     case 'GET': case 'HEAD': case 'OPTIONS':
