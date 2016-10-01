@@ -306,7 +306,7 @@ function postInboxArgv(url){
 
   var headers = {};
   headers['Slug'] = ('slug' in argv) ? argv['slug'] : '';
-  headers['Content-Type'] = ('contentType' in argv) ? argv['contentType'] : 'application/ld+json';
+  headers['Content-Type'] = ('contentType' in argv) ? formatToMimeType(argv['contentType']) : 'application/ld+json';
 
   var data;
   if ('data' in argv && argv['data'] !== ''){
