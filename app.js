@@ -200,11 +200,12 @@ function help() {
   console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
   console.log('    --postInbox <URI> [options]     Send notification to Inbox');
   console.log('    [options]');
-  console.log('    --accept (mimetype, default: application/ld+json)');
-  console.log('    --contentType (mimetype, default: application/ld+json)');
+  console.log('    --accept (m, default: application/ld+json)');
+  console.log('    --contentType (m, default: application/ld+json)');
   console.log('    --slug string');
   console.log('    -d, --data <data>');
-  console.log('    -o, --outputType (mimetype or format[eg jsonld, turtle], default: application/ld+json)');
+  console.log('    -o, --outputType (m, default: application/ld+json)');
+  console.log('    m: mimetype or format; jsonld, turtle');
 }
 
 function discoverInbox(url){
