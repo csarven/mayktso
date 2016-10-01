@@ -182,7 +182,7 @@ function processArgs(){
     console.log('    --accept (mimetype, default: application/ld+json)');
     console.log('    --contentType (mimetype[;charset][;profile], default: application/ld+json)');
     console.log('    --slug string');
-    console.log('    --data string');
+    console.log('    -d, --data <data>');
     console.log('    --outputType (mimetype, default: application/ld+json)')
   }
 
@@ -287,8 +287,16 @@ function postInboxArgv(url){
   headers['Slug'] = ('slug' in argv) ? argv['slug'] : '';
   headers['Content-Type'] = ('contentType' in argv) ? argv['contentType'] : 'application/ld+json';
 
+  var data;
   if ('data' in argv && argv['data'] !== ''){
-    postResource(pIRI, headers['Slug'], argv['data'], headers['Content-Type']).then(
+    data = argv['data'];
+  }
+  else if('d' in argv && argv['d'] !== ''){
+    data = argv['d'];
+  }
+
+  if(data){
+    postResource(pIRI, headers['Slug'], data, headers['Content-Type']).then(
       function(response){
 //        console.log(response.xhr);
         console.log('HTTP/1.1 ' + response.xhr.status + ' ' + response.xhr.statusText);
@@ -303,6 +311,9 @@ function postInboxArgv(url){
         console.dir(reason);
       }
     );
+  }
+  else {
+    console.log('Missing payload. Include -d or --data.');
   }
 }
 
