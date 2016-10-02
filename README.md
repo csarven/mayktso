@@ -78,7 +78,6 @@ $ curl -i -X OPTIONS -H'Accept: application/ld+json' http://localhost:3000/inbox
 # Command-line
 ```shell
 $ node app.js --help
-{ _: [], help: true }
 mayktso: https://github.com/csarven/mayktso
   * Running without parameter/option starts server, otherwise:
   * Usage: node app.js [parameter] [options]
@@ -95,6 +94,12 @@ mayktso: https://github.com/csarven/mayktso
     -d, --data <data>
     -o, --outputType (m, default: application/ld+json)
     m: mimetype or format; jsonld, turtle
+```
+
+```shell
+$ node app.js --getResource http://localhost:3000/ --accept application/ld+json
+$ node app.js --postInbox http://localhost:3000/inbox/ --contentType application/ld+json -d '[{"@id":"http://example.org/foo","http://schema.org/name":"Foo"}]'
+$ node app.js --getNotifications http://localhost:3000/inbox/abc --accept application/ld+json
 ```
 
 ## Dependencies
