@@ -23,6 +23,7 @@ Optional config use: `cp config.json.default cp config.json`
   "port": "3000",
   "sslKey": "/path/to/privkey.pem",
   "sslCert": "/path/to/cert.pem",
+  "proxyURL": "http://example.org/proxy?uri=",
   "basePath": "",
   "inboxPath": "inbox/",
   "queuePath": "queue/",
@@ -74,6 +75,28 @@ $ curl -I -H'Accept: application/ld+json' http://localhost:3000/inbox/abc
 $ curl -i -X OPTIONS -H'Accept: application/ld+json' http://localhost:3000/inbox/abc
 ```
 
+# Command-line
+```shell
+$ node app.js --help
+{ _: [], help: true }
+mayktso: https://github.com/csarven/mayktso
+  * Running without parameter/option starts server, otherwise:
+  * Usage: node app.js [parameter] [options]
+    [parameter]
+    --help
+    --discoverInbox <URI>           Discover a target's Inbox
+    --getNotifications <URI>        Get an Inbox's contents
+    --getResource <URI> [options]   Dereference a resource to RDF
+    --postInbox <URI> [options]     Send notification to Inbox
+    [options]
+    --accept (m, default: application/ld+json)
+    --contentType (m, default: application/ld+json)
+    --slug string
+    -d, --data <data>
+    -o, --outputType (m, default: application/ld+json)
+    m: mimetype or format; jsonld, turtle
+```
+
 ## Dependencies
 * [SimpleRDF](https://github.com/simplerdf/simplerdf) (MIT License) used for RDF
 * [Express](https://github.com/expressjs/express)
@@ -83,7 +106,7 @@ $ curl -i -X OPTIONS -H'Accept: application/ld+json' http://localhost:3000/inbox
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 ## See also
-* https://www.w3.org/TR/ldp/
-* https://www.w3.org/TR/ldn/
-* https://github.com/solid/node-solid-server
-* https://github.com/linkeddata/dokieli
+* mayktso based on [Linked Data Platform](https://www.w3.org/TR/ldp/) mechanisms
+* [Linked data Notifications](https://www.w3.org/TR/ldn/) conformant (use this as your Inbox)
+* Motived by [node-solid server](https://github.com/solid/node-solid-server)
+* Compliments [dokieli](https://github.com/linkeddata/dokieli)
