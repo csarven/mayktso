@@ -98,7 +98,8 @@ mayktso: https://github.com/csarven/mayktso
 
 ```shell
 $ node app.js --getResource http://localhost:3000/ --accept application/ld+json
-$ node app.js --postInbox http://localhost:3000/inbox/ --contentType application/ld+json -d '[{"@id":"http://example.org/foo","http://schema.org/name":"Foo"}]'
+$ node app.js --postInbox http://localhost:3000/inbox/ --contentType application/ld+json \
+-d '[{"@id":"http://example.org/foo","http://schema.org/name":"Foo"}]'
 $ node app.js --getNotifications http://localhost:3000/inbox/abc --accept application/ld+json
 ```
 
