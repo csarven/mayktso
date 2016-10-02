@@ -175,8 +175,8 @@ function processArgs(){
   else if('discoverInbox' in argv){
     discoverInbox(argv['discoverInbox']);
   }
-  else if ('getInbox' in argv){
-    getInbox(argv['getInbox']);
+  else if ('getNotifications' in argv){
+    getNotificationsArgv(argv['getNotifications']);
   }
   else if ('getResource' in argv){
     getResourceArgv(argv['getResource']);
@@ -196,7 +196,7 @@ function help() {
   console.log('    [parameter]');
   console.log('    --help');
   console.log("    --discoverInbox <URI>           Discover a target's Inbox");
-  console.log("    --getInbox <URI                 Get an Inbox's contents");
+  console.log("    --getNotifications <URI>        Get an Inbox's contents");
   console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
   console.log('    --postInbox <URI> [options]     Send notification to Inbox');
   console.log('    [options]');
@@ -226,20 +226,35 @@ function discoverInbox(url){
   );
 }
 
-function getInbox(url){
+function getNotificationsArgv(url){
   url = url || argv['getInbox'];
   if (url.slice(0,4) != 'http') {
     process.exit(1);
   }
 
-  getNotifications(url).then(
-    function(i){
-      console.log('Found:');
-      console.dir(i);
+  var headers = {};
+  headers['Accept'] = ('accept' in argv) ? (formatToMimeType(argv['accept'])) : 'application/ld+json';
+
+  getResourceHandler(url, headers).then(
+    function(data){
+      var options = {
+        'contentType': headers['Accept'],
+        'subjectURI': url
+      }
+
+      getInboxNotifications(data, options).then(
+        function(i){
+          console.log(i);
+        },
+        function(reason){
+          console.log('Error:');
+          console.log(reason);
+        }
+      );
     },
     function(reason){
-      console.log('Not Found:');
-      console.dir(reason);
+      console.log('Error:');
+      console.log(reason);
     }
   );
 }
@@ -249,16 +264,31 @@ function getResourceArgv(url){
   if (url.slice(0,4) != 'http') {
     process.exit(1);
   }
-  var pIRI = getProxyableIRI(url);
 
   var headers = {};
   headers['Accept'] = ('accept' in argv) ? (formatToMimeType(argv['accept'])) : 'application/ld+json';
 
-  getResource(pIRI, headers).then(
+  getResourceHandler(url, headers).then(
+      function(i){
+        console.log(i);
+      },
+      function(){
+        console.log('Error:');
+        console.log(reason);
+      }
+  );
+}
+
+function getResourceHandler(url, headers){
+  var pIRI = getProxyableIRI(url);
+
+  headers = headers || {};
+
+  return getResource(pIRI, headers).then(
     function(response){
       console.log(response.xhr.getAllResponseHeaders());
       console.log('');
-      data = response.xhr.responseText;
+      var data = response.xhr.responseText;
 
       var toContentType;
       if ('outputType' in argv && argv['outputType'] !== '' && (argv['o'] == 'text/turtle' || argv['o'] == 'application/ld+json')){
@@ -276,23 +306,14 @@ function getResourceArgv(url){
       var options = { 'subjectURI': url };
 
       if(headers['Accept'] != toContentType) {
-        serializeData(data, headers['Accept'], toContentType, options).then(
-          function(transformedData){
-            console.log(transformedData);
-          },
-          function(reason) {
-            console.log('Error:');
-            console.dir(reason);
-          }
-        );
+        return serializeData(data, headers['Accept'], toContentType, options);
       }
       else {
-        console.log(data);
+        return data;
       }
     },
     function(reason){
-      console.log('Not Found:');
-      console.dir(reason);
+      return reason;
     }
   );
 }
@@ -1039,15 +1060,13 @@ console.log(reason);
       );
 }
 
-function getNotifications(url) {
-  url = url || window.location.origin + window.location.pathname;
-  var notifications = [];
-  var pIRI = getProxyableIRI(url);
 
-  return getGraph(pIRI).then(
+function getInboxNotifications(data, options) {
+  return getGraphFromData(data, options).then(
     function(i) {
-        var s = i.child(url);
+        var s = SimpleRDF(vocab, options['subjectURI'], i, RDFstore).child(options['subjectURI']);
 
+        var notifications = [];
         s.ldpcontains.forEach(function(resource) {
             resource = resource.toString();
 // console.log(resource);
