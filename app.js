@@ -359,6 +359,46 @@ function postInboxArgv(url){
   }
 }
 
+function putResourceArgv(url){
+  url = url || argv['putResource'];
+  if (url.slice(0,4) != 'http') {
+    process.exit(1);
+  }
+  var pIRI = getProxyableIRI(url);
+
+  var headers = {};
+  headers['Content-Type'] = ('contentType' in argv) ? formatToMimeType(argv['contentType']) : 'application/ld+json';
+
+  var data;
+  if ('data' in argv && argv['data'] !== ''){
+    data = argv['data'];
+  }
+  else if('d' in argv && argv['d'] !== ''){
+    data = argv['d'];
+  }
+
+  if(data){
+    putResource(pIRI, data, headers['Content-Type']).then(
+      function(response){
+//        console.log(response.xhr);
+        console.log('HTTP/1.1 ' + response.xhr.status + ' ' + response.xhr.statusText);
+        console.log(response.xhr.getAllResponseHeaders());
+        console.log('');
+        if(response.xhr.responseText.lenth > 0){
+          console.log(response.xhr.responseText);
+        }
+      },
+      function(reason){
+        console.log('Not Found:');
+        console.dir(reason);
+      }
+    );
+  }
+  else {
+    console.log('Missing payload. Include -d or --data.');
+  }
+}
+
 function getTarget(req, res, next){
   switch(req.method){
     case 'GET': case 'HEAD': case 'OPTIONS':
