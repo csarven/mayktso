@@ -652,16 +652,24 @@ function postContainer(req, res, next){
   if(req.is('application/ld+json') || req.is('text/turtle')) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < maxPayloadSize) ? true : false;
+    var url = req.getUrl();
+    var basePath = getBaseURL(path);
+    var baseURL = getBaseURL(url);
 
     var fileName;
-    if(req.headers['slug'] && req.headers['slug'].length > 0 && !fileExists(path + req.headers['slug'])) {
+    var lastPath = url.substr(url.lastIndexOf('/') + 1);
+
+    if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fileExists(path)) {
+      fileName = lastPath;
+    }
+    else if(req.headers['slug'] && req.headers['slug'].length > 0 && !req.headers['slug'].match(/\/?\.\.+\/?/g) && !fileExists(path + req.headers['slug'])) {
       fileName = req.headers['slug'];
     }
     else {
       fileName = uuid.v1();
     }
 
-    fs.stat(path, function(error, stats) {
+    fs.stat(basePath, function(error, stats) {
       if(error) {
         res.status(404);
         res.end();
@@ -671,14 +679,13 @@ function postContainer(req, res, next){
 
       if(createRequest) {
         if(stats.isDirectory()) {
-            var file = path + fileName;
-            var url = req.getUrl();
-            var base = url.endsWith('/') ? url : url + '/';
+            var file = basePath + fileName;
+            var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
             var uri = base + fileName;
 
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
-                gcDirectory(path);
+                gcDirectory(basePath);
                 fs.appendFile(file, data, function(x) {
 // console.log(uri);
                   res.set('Location', uri);
