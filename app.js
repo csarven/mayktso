@@ -184,6 +184,9 @@ function processArgs(){
   else if ('postInbox' in argv){
     postInboxArgv(argv['postInbox']);
   }
+  else if ('putResource' in argv){
+    putResourceArgv(argv['putResource']);
+  }
   else {
     help();
   }
@@ -199,6 +202,7 @@ function help() {
   console.log("    --getNotifications <URI>        Get an Inbox's contents");
   console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
   console.log('    --postInbox <URI> [options]     Send notification to Inbox');
+  console.log('    --putResource <URI> [options]   Store data under a URI');
   console.log('    [options]');
   console.log('    --accept (m, default: application/ld+json)');
   console.log('    --contentType (m, default: application/ld+json)');
@@ -508,7 +512,7 @@ function handleResource(req, res, next){
   switch(req.method){
     case 'GET': case 'HEAD': case 'OPTIONS':
       break;
-    case 'POST':
+    case 'POST': case 'PUT':
       return postContainer(req, res, next);
       break;
     default:
