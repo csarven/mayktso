@@ -181,8 +181,8 @@ function processArgs(){
   else if ('getResource' in argv){
     getResourceArgv(argv['getResource']);
   }
-  else if ('postInbox' in argv){
-    postInboxArgv(argv['postInbox']);
+  else if ('postResource' in argv){
+    postResourceArgv(argv['postResource']);
   }
   else if ('putResource' in argv){
     putResourceArgv(argv['putResource']);
@@ -201,7 +201,7 @@ function help() {
   console.log("    --discoverInbox <URI>           Discover a target's Inbox");
   console.log("    --getNotifications <URI>        Get an Inbox's contents");
   console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
-  console.log('    --postInbox <URI> [options]     Send notification to Inbox');
+  console.log('    --postResource <URI> [options]     Send notification to Inbox');
   console.log('    --putResource <URI> [options]   Store data under a URI');
   console.log('    [options]');
   console.log('    --accept (m, default: application/ld+json)');
@@ -322,8 +322,8 @@ function getResourceHandler(url, headers){
   );
 }
 
-function postInboxArgv(url){
-  url = url || argv['postInbox'];
+function postResourceArgv(url){
+  url = url || argv['postResource'];
   if (url.slice(0,4) != 'http') {
     process.exit(1);
   }
