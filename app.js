@@ -796,6 +796,14 @@ function fileExists(filepath){
   return flag;
 }
 
+function getBaseURL(url) {
+  if(typeof url === 'string') {
+      url = url.substr(0, url.lastIndexOf('/') + 1);
+  }
+
+  return url;
+}
+
 function formatToMimeType(format){
   switch(format){
     case 'jsonld':
