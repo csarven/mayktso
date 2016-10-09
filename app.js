@@ -179,16 +179,16 @@ function processArgs(){
     getNotificationsArgv(argv['getNotifications']);
   }
   else if ('getResource' in argv){
-    getResourceArgv(argv['getResource']);
+    getResourceArgv(argv['get']);
   }
   else if ('postResource' in argv){
-    postResourceArgv(argv['postResource']);
+    postResourceArgv(argv['post']);
   }
   else if ('putResource' in argv){
-    putResourceArgv(argv['putResource']);
+    putResourceArgv(argv['put']);
   }
   else if ('headResource' in argv){
-    headResourceArgv(argv['headResource']);
+    headResourceArgv(argv['head']);
   }
   else {
     help();
@@ -201,12 +201,12 @@ function help() {
   console.log('  * Usage: node app.js [parameter] [options]');
   console.log('    [parameter]');
   console.log('    --help');
-  console.log("    --discoverInbox <URI>           Discover a target's Inbox");
-  console.log("    --getNotifications <URI>        Get an Inbox's contents");
-  console.log("    --headResource <URI>            Headers of a URI");
-  console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
-  console.log('    --postResource <URI> [options]  Send notification to Inbox');
-  console.log('    --putResource <URI> [options]   Store data under a URI');
+  console.log("    --discoverInbox <URI>        Discover a target's Inbox");
+  console.log("    --getNotifications <URI>     Get an Inbox's contents");
+  console.log("    --head <URI>                 Headers of a URI");
+  console.log('    --get <URI> [options]        Dereference a resource to RDF');
+  console.log('    --post <URI> [options]       Send notification to Inbox');
+  console.log('    --put <URI> [options]        Store data under a URI');
   console.log('    [options]');
   console.log('    --accept (m, default: application/ld+json)');
   console.log('    --contentType (m, default: application/ld+json)');
@@ -268,7 +268,7 @@ function getNotificationsArgv(url){
 }
 
 function getResourceArgv(url){
-  url = url || argv['getResource'];
+  url = url || argv['get'];
   if (url.slice(0,4) != 'http') {
     process.exit(1);
   }
@@ -327,7 +327,7 @@ function getResourceHandler(url, headers){
 }
 
 function headResourceArgv(url){
-  url = url || argv['headResource'];
+  url = url || argv['head'];
   if (url.slice(0,4) != 'http') {
     process.exit(1);
   }
@@ -367,7 +367,7 @@ function headResourceHandler(url, headers){
 }
 
 function postResourceArgv(url){
-  url = url || argv['postResource'];
+  url = url || argv['post'];
   if (url.slice(0,4) != 'http') {
     process.exit(1);
   }
@@ -408,7 +408,7 @@ function postResourceArgv(url){
 }
 
 function putResourceArgv(url){
-  url = url || argv['putResource'];
+  url = url || argv['put'];
   if (url.slice(0,4) != 'http') {
     process.exit(1);
   }
