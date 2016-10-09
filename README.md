@@ -1,16 +1,17 @@
-# Mayktso
+# mayktso
 Encounters at an endpoint.
 
 ## About
-* Preliminary HTTP server and command-line RDF tool to get/send, serialize data.
-* Conformant
-[Linked Data Notifications receiver](https://www.w3.org/TR/ldn#receiving).
+* Preliminary HTTP server and command-line RDF tool to get/send, serialise data.
 * Server can receive HTTP `GET`, `POST`, `PUT`, `OPTIONS` requests.
 Content negotiation with `text/turtle`, `application/ld+json`, `text/html`,
+* Conformant
+[Linked Data Notifications receiver](https://www.w3.org/TR/ldn#receiving).
 `application/xhtml+xml`. TODO: Serialisation to HTML+RDFa
-* The server doesn't do authenication/authorisation yet.
+* The server speaks a little bit of LDP. It doesn't do
+authenication/authorisation yet.
 
-See [issues](https://github.com/csarven/mayktso/issues).
+Dive into [issues](https://github.com/csarven/mayktso/issues).
 
 ## Receiver
 Server runs on http://localhost:3000/ by default:
@@ -44,7 +45,7 @@ ProxyPass /foo/ https://localhost:3000/
 ProxyPassReverse /foo/ https://localhost:3000/
 ```
 
-so that http://example.org/foo/bar resolves, otherwise, server only sees /bar.So
+so that http://example.org/foo/bar resolves, otherwise, server only sees /bar
 e.g., `basePath: "/foo/bar/"`
 
 * `inboxPath` and `queuePath` are relative to root e.g.,
@@ -140,8 +141,9 @@ http://localhost:3000/inbox/abc
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 ## See also
-* mayktso based on [Linked Data Platform](https://www.w3.org/TR/ldp/) mechanisms
-* [Linked data Notifications](https://www.w3.org/TR/ldn/) conformant (use
+* mayktso is based on [Linked Data Platform](https://www.w3.org/TR/ldp/)
+mechanisms
+* [Linked Data Notifications](https://www.w3.org/TR/ldn/) conformant (use
 mayktso as a receiver for your Inbox)
-* Motived by [node-solid server](https://github.com/solid/node-solid-server)
+* Motived by [node-solid-server](https://github.com/solid/node-solid-server)
 * Compliments [dokieli](https://github.com/linkeddata/dokieli)
