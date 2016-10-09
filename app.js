@@ -366,6 +366,49 @@ function headResourceHandler(url, headers){
   );
 }
 
+function optionsResourceArgv(url){
+  url = url || argv['head'];
+  if (url.slice(0,4) != 'http') {
+    process.exit(1);
+  }
+
+  var headers = {};
+  headers['Accept'] = ('accept' in argv) ? (formatToMimeType(argv['accept'])) : 'application/ld+json';
+  if('acceptPost' in argv) {
+    headers['Accept-Post'] = argv['acceptPost'];
+  }
+
+  headResourceHandler(url, headers).then(
+      function(i){
+        console.log(i);
+      },
+      function(){
+        console.log('Error:');
+        console.log(reason);
+      }
+  );
+}
+
+function optionsResourceHandler(url, headers){
+  var pIRI = getProxyableIRI(url);
+
+  headers = headers || {};
+
+  return getResourceOptions(pIRI, headers).then(
+    function(response){
+      console.log(response.xhr.getAllResponseHeaders());
+      var data = '';
+      if(response.xhr.responseText.length > 0) {
+        data = "\n" + response.xhr.responseText;
+      }
+      return data;
+    },
+    function(reason){
+      return reason;
+    }
+  );
+}
+
 function postResourceArgv(url){
   url = url || argv['post'];
   if (url.slice(0,4) != 'http') {
