@@ -190,6 +190,9 @@ function processArgs(){
   else if ('head' in argv){
     headResourceArgv(argv['head']);
   }
+  else if ('options' in argv){
+    optionsResourceArgv(argv['options']);
+  }
   else {
     help();
   }
@@ -204,6 +207,7 @@ function help() {
   console.log("    --discoverInbox <URI>        Discover a target's Inbox");
   console.log("    --getNotifications <URI>     Get an Inbox's contents");
   console.log("    --head <URI>                 Headers of a URI");
+  console.log('    --options <URI>              Check the options of a URI');
   console.log('    --get <URI> [options]        Dereference a resource to RDF');
   console.log('    --post <URI> [options]       Send notification to Inbox');
   console.log('    --put <URI> [options]        Store data under a URI');
