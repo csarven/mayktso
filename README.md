@@ -3,7 +3,7 @@ Encounters at an endpoint.
 
 ## About
 * Preliminary HTTP server and command-line RDF tool to get/send, serialise data.
-* Server can receive HTTP `GET`, `POST`, `PUT`, `OPTIONS` requests.
+* Server can receive HTTP `HEAD`, `OPTIONS`, `GET`, `POST`, `PUT` requests.
 Content negotiation with `text/turtle`, `application/ld+json`, `text/html`,
 * Conformant
 [Linked Data Notifications receiver](https://www.w3.org/TR/ldn#receiving).
@@ -66,7 +66,7 @@ mayktso: https://github.com/csarven/mayktso
   * Usage: node app.js [parameter] [options]
     [parameter]
     --help
-    --discoverInbox <URI>        Discover a target's Inbox
+    --discoverInbox <URI>        Discover a resource Inbox
     --getNotifications <URI>     Get an Inbox's contents
     --head <URI>                 Headers of a URI
     --get <URI> [options]        Dereference a resource to RDF
