@@ -65,11 +65,12 @@ mayktso: https://github.com/csarven/mayktso
   * Usage: node app.js [parameter] [options]
     [parameter]
     --help
-    --discoverInbox <URI>           Discover a target's Inbox
-    --getNotifications <URI>        Get an Inbox's contents
-    --getResource <URI> [options]   Dereference a resource to RDF
-    --postResource <URI> [options]  Send notification to Inbox
-    --putResource <URI> [options]   Store data under a URI
+    --discoverInbox <URI>        Discover a target's Inbox
+    --getNotifications <URI>     Get an Inbox's contents
+    --head <URI>                 Headers of a URI
+    --get <URI> [options]        Dereference a resource to RDF
+    --post <URI> [options]       Send notification to Inbox
+    --put <URI> [options]        Store data under a URI
     [options]
     --accept (m, default: application/ld+json)
     --contentType (m, default: application/ld+json)
@@ -84,11 +85,12 @@ $ node app.js --discoveryInbox http://localhost:3000/ --accept \
 application/ld+json
 $ node app.js --getNotifications http://localhost:3000/inbox/abc --accept \
 application/ld+json
-$ node app.js --getResource http://localhost:3000/ --accept application/ld+json
-$ node app.js --postResource http://localhost:3000/inbox/ --slug foo \
+$ node app.js --head http://localhost:3000/
+$ node app.js --get http://localhost:3000/ --accept application/ld+json
+$ node app.js --post http://localhost:3000/inbox/ --slug foo \
 --contentType application/ld+json -d \
 '[{"@id":"http://example.org/foo","http://schema.org/name":"Foo"}]'
-$ node app.js --putResource http://localhost:3000/inbox/ --contentType \
+$ node app.js --put http://localhost:3000/inbox/ --contentType \
 application/ld+json -d \
 '[{"@id":"http://example.org/foo","http://schema.org/name":"Foo"}]'
 ```
