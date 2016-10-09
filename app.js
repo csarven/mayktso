@@ -187,6 +187,9 @@ function processArgs(){
   else if ('putResource' in argv){
     putResourceArgv(argv['putResource']);
   }
+  else if ('headResource' in argv){
+    headResourceArgv(argv['headResource']);
+  }
   else {
     help();
   }
@@ -200,8 +203,9 @@ function help() {
   console.log('    --help');
   console.log("    --discoverInbox <URI>           Discover a target's Inbox");
   console.log("    --getNotifications <URI>        Get an Inbox's contents");
+  console.log("    --headResource <URI>            Headers of a URI");
   console.log('    --getResource <URI> [options]   Dereference a resource to RDF');
-  console.log('    --postResource <URI> [options]     Send notification to Inbox');
+  console.log('    --postResource <URI> [options]  Send notification to Inbox');
   console.log('    --putResource <URI> [options]   Store data under a URI');
   console.log('    [options]');
   console.log('    --accept (m, default: application/ld+json)');
@@ -1113,7 +1117,7 @@ function getResourceHead(url, options) {
                       return reject({'message': "'" + options.header + "' header not found"});
                   }
               }
-              return reject({status: this.status, xhr: this});
+              return resolve({xhr: this});
           }
       };
       http.send();
