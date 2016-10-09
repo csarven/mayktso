@@ -178,16 +178,16 @@ function processArgs(){
   else if ('getNotifications' in argv){
     getNotificationsArgv(argv['getNotifications']);
   }
-  else if ('getResource' in argv){
+  else if ('get' in argv){
     getResourceArgv(argv['get']);
   }
-  else if ('postResource' in argv){
+  else if ('post' in argv){
     postResourceArgv(argv['post']);
   }
-  else if ('putResource' in argv){
+  else if ('put' in argv){
     putResourceArgv(argv['put']);
   }
-  else if ('headResource' in argv){
+  else if ('head' in argv){
     headResourceArgv(argv['head']);
   }
   else {
