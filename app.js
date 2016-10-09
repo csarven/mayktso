@@ -1100,6 +1100,36 @@ function getResource(url, headers) {
   });
 }
 
+function getResourceOptions(url, options) {
+  url = url || window.location.origin + window.location.pathname;
+  options = options || {};
+  return new Promise(function(resolve, reject) {
+      var http = new XMLHttpRequest();
+      http.open('OPTIONS', url);
+      // http.withCredentials = true;
+      http.onreadystatechange = function() {
+          if (this.readyState == this.DONE) {
+              if (this.status === 200 || this.status === 204) {
+                  if('header' in options) {
+                      if(this.getResponseHeader(options.header)) {
+                          return resolve({'headers': this.getResponseHeader(options.header)});
+                      }
+                      else {
+                          return reject({'message': "'" + options.header + "' header not found"});
+                      }
+                  }
+                  return resolve({'headers': this.getAllResponseHeaders()});
+              }
+              return reject({status: this.status, xhr: this});
+          }
+      };
+      http.onerror = function () {
+          return reject({status: this.status, xhr: this});
+      }
+      http.send();
+  });
+}
+
 function getResourceHead(url, options) {
   url = url || ((typeof window !== 'undefined') ? window.location.origin + window.location.pathname : '');
   options = options || {};
