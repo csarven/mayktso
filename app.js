@@ -322,6 +322,46 @@ function getResourceHandler(url, headers){
   );
 }
 
+function headResourceArgv(url){
+  url = url || argv['headResource'];
+  if (url.slice(0,4) != 'http') {
+    process.exit(1);
+  }
+
+  var headers = {};
+  headers['Accept'] = ('accept' in argv) ? (formatToMimeType(argv['accept'])) : 'application/ld+json';
+
+  headResourceHandler(url, headers).then(
+      function(i){
+        console.log(i);
+      },
+      function(){
+        console.log('Error:');
+        console.log(reason);
+      }
+  );
+}
+
+function headResourceHandler(url, headers){
+  var pIRI = getProxyableIRI(url);
+
+  headers = headers || {};
+
+  return getResourceHead(pIRI).then(
+    function(response){
+      console.log(response.xhr.getAllResponseHeaders());
+      var data = '';
+      if(response.xhr.responseText.length > 0) {
+        data = "\n" + response.xhr.responseText;
+      }
+      return data;
+    },
+    function(reason){
+      return reason;
+    }
+  );
+}
+
 function postResourceArgv(url){
   url = url || argv['postResource'];
   if (url.slice(0,4) != 'http') {
