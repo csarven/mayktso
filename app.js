@@ -205,7 +205,7 @@ function help() {
   console.log('    [parameter]');
   console.log('    --help');
   console.log("    --discoverInbox <URI>        Discover a target's Inbox");
-  console.log("    --getNotifications <URI>     Get an Inbox's contents");
+  console.log("    --getNotifications <URI>     Get the notifications contained in an Inbox");
   console.log("    --head <URI>                 Headers of a URI");
   console.log('    --options <URI>              Check the options of a URI');
   console.log('    --get <URI> [options]        Dereference a resource to RDF');
@@ -255,8 +255,21 @@ function getNotificationsArgv(url){
       }
 
       getInboxNotifications(data, options).then(
-        function(i){
-          console.log(i);
+        function(notifications){
+          var contains = [];
+          for (var i = 0; i < notifications.length; i++) {
+            contains.push({
+              "@id": notifications[i]
+            });
+          }
+
+          var data = JSON.stringify({
+            "@id": url,
+            "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource', 'http://www.w3.org/ns/ldp#Container', 'http://www.w3.org/ns/ldp#BasicContainer' ],
+            "http://www.w3.org/ns/ldp#contains": contains
+          }) + "\n";
+
+          console.log(data);
         },
         function(reason){
           console.log('Error:');
