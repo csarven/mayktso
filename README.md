@@ -66,9 +66,10 @@ mayktso: https://github.com/csarven/mayktso
   * Usage: node app.js [parameter] [options]
     [parameter]
     --help
-    --discoverInbox <URI>        Discover a resource Inbox
-    --getNotifications <URI>     Get an Inbox's contents
+    --discoverInbox <URI>        Discover a target's Inbox
+    --getNotifications <URI>     Get the notifications contained in an Inbox
     --head <URI>                 Headers of a URI
+    --options <URI>              Check the options of a URI
     --get <URI> [options]        Dereference a resource to RDF
     --post <URI> [options]       Send notification to Inbox
     --put <URI> [options]        Store data under a URI
