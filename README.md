@@ -5,13 +5,14 @@ Encounters at an endpoint.
 * Preliminary HTTP server and command-line RDF tool to get/send, serialise data.
 * Server can receive HTTP `HEAD`, `OPTIONS`, `GET`, `POST`, `PUT` requests.
 Content negotiation with `text/turtle`, `application/ld+json`, `text/html`,
+`application/xhtml+xml`
 * Conformant
-[Linked Data Notifications receiver](https://www.w3.org/TR/ldn#receiving).
-`application/xhtml+xml`. TODO: Serialisation to HTML+RDFa
+[Linked Data Notifications receiver](https://www.w3.org/TR/ldn#receiving).TODO:
+Serialisation to HTML+RDFa
 * The server speaks a little bit of LDP. It doesn't do
 authenication/authorisation yet.
 
-Dive into [issues](https://github.com/csarven/mayktso/issues).
+Dive into [issues](https://github.com/csarven/mayktso/issues) because it is fun.
 
 ## Receiver
 Server runs on http://localhost:3000/ by default:
