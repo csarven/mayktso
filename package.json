@@ -38,6 +38,6 @@
     "rdf-store-ldp": "git://github.com/rdf-ext/rdf-store-ldp.git#master",
     "simplerdf": "^0.2.14",
     "simplerdf-parse": "git://github.com/nicola/simplerdf-parse.git#master",
-    "xmlhttprequest": "^1.8.0"
+    "xhr2": "^0.1.3"
   }
 }
