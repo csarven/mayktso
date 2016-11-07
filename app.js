@@ -121,7 +121,7 @@ app.route('/').all(getTarget);
 app.route('/index.html').all(getTarget);
 app.route('/inbox/:id?').all(handleResource);
 app.route('/queue/:id').all(handleResource);
-app.route('/annotation/:id').all(handleResource);
+app.route('/annotation/:id?').all(handleResource);
 
 if (process.argv.length > 2) {
   processArgs();
