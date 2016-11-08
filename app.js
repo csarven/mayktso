@@ -263,11 +263,16 @@ function getNotificationsArgv(url){
             });
           }
 
-          var data = JSON.stringify({
+          var data = {
             "@id": url,
-            "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource', 'http://www.w3.org/ns/ldp#Container', 'http://www.w3.org/ns/ldp#BasicContainer' ],
-            "http://www.w3.org/ns/ldp#contains": contains
-          }) + "\n";
+            "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource', 'http://www.w3.org/ns/ldp#Container', 'http://www.w3.org/ns/ldp#BasicContainer' ]
+          };
+
+          if (contains.length > 0) {
+            data['http://www.w3.org/ns/ldp#contains'] = contains;
+          }
+
+          data = JSON.stringify(data) + "\n";
 
           console.log(data);
         },
@@ -724,11 +729,16 @@ function handleResource(req, res, next){
         }
 
 //          "@context": "http://www.w3.org/ns/ldp",
-        var data = JSON.stringify({
+        var data = {
           "@id": req.getUrl(),
-          "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource', 'http://www.w3.org/ns/ldp#Container', 'http://www.w3.org/ns/ldp#BasicContainer' ],
-          "http://www.w3.org/ns/ldp#contains": contains
-        }) + "\n";
+          "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource', 'http://www.w3.org/ns/ldp#Container', 'http://www.w3.org/ns/ldp#BasicContainer' ]
+        };
+
+        if(contains.length > 0) {
+          data['http://www.w3.org/ns/ldp#contains'] = contains;
+        }
+
+        data = JSON.stringify(data) + "\n";
 
         var respond = function() {
           return new Promise(function(resolve, reject) {
