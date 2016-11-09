@@ -1,3 +1,10 @@
+/** mayktso
+ *
+ * Sarven Capadisli <info@csarven.ca> http://csarven.ca/#i
+ * http://www.apache.org/licenses/LICENSE-2.0.html Apache License, Version 2.0
+ * https://github.com/csarven/mayktso
+ */
+
 var LdpStore = require('rdf-store-ldp/lite')
 var SimpleRDF = require('simplerdf')
 var N3Parser = require('rdf-parser-n3')
