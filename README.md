@@ -29,6 +29,7 @@ Optional config use: `cp config.json.default config.json`
   "sslKey": "/path/to/privkey.pem",
   "sslCert": "/path/to/cert.pem",
   "proxyURL": "http://example.org/proxy?uri=",
+  "rootPath": ".",
   "basePath": "",
   "inboxPath": "inbox/",
   "queuePath": "queue/",
@@ -53,6 +54,8 @@ e.g., `basePath: "/foo/bar/"`
 http://localhost:3000/{inbox,queue}/
 * queue is used for HTTP 202 responses (default for payload above 1000 bytes).
 Status: Testing
+* `rootPath` defaults to the current directory (`.`) or a full path can be
+specified. Requests are relative to this location.
 * `maxPayloadSize` is for POSTs (as the name suggests)
 * `maxResourceCount` is for number of notifications to keep in inbox/ or queue
 
