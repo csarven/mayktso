@@ -134,6 +134,7 @@ else if(!module.parent) {
     config['port'] = config.port || 3000;
     config['inboxPath'] = config.inboxPath || 'inbox/';
     config['queuePath'] = config.queuePath || 'queue/';
+    config['queuePath'] = config.annotationPath || 'annotation/';
     config['maxPayloadSize'] = config.maxPayloadSize || 1000;
     config['maxResourceCount'] = config.maxResourceCount || 10;
     config['rootPath'] = config.rootPath || __dirname;
@@ -160,6 +161,7 @@ else if(!module.parent) {
     rootPath = config.rootPath;
     inboxPath = config.inboxPath;
     queuePath = config.queuePath;
+    annotatonPath = config.annotatonPath;
     maxPayloadSize = config.maxPayloadSize;
     maxResourceCount = config.maxResourceCount;
     proxyURL = config.proxyURL;
@@ -168,7 +170,7 @@ else if(!module.parent) {
     app.route('/index.html').all(getTarget);
     app.route('/' + inboxPath + ':id?').all(handleResource);
     app.route('/' + queuePath + ':id').all(handleResource);
-    app.route('/annotation/:id?').all(handleResource);
+    app.route('/' + annotationPath + '/:id?').all(handleResource);
 
     console.log('process.cwd(): ' + process.cwd());
     console.log('rootPath: ' + rootPath);
