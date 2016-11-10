@@ -104,8 +104,7 @@ app.use(function(req, res, next){
 app.use(function(req, res, next) {
   accept = accepts(req);
   requestedType = accept.type(availableTypes);
-  path = __dirname + req.originalUrl;
-
+  path = rootPath + req.originalUrl;
   // console.log(req);
   // console.log(res);
 
@@ -121,14 +120,9 @@ app.use(function(req, res, next) {
   // console.log('req.url: ' + req.url);
   // console.log('req.getUrl: ' + req.getUrl());
   // console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
+  // console.log('rootPath + req.originalUrl: ' +  rootPath + req.originalUrl);
   return next();
 });
-
-app.route('/').all(getTarget);
-app.route('/index.html').all(getTarget);
-app.route('/inbox/:id?').all(handleResource);
-app.route('/queue/:id').all(handleResource);
-app.route('/annotation/:id?').all(handleResource);
 
 if (process.argv.length > 2) {
   processArgs();
@@ -142,6 +136,7 @@ else if(!module.parent) {
     config['queuePath'] = config.queuePath || 'queue/';
     config['maxPayloadSize'] = config.maxPayloadSize || 1000;
     config['maxResourceCount'] = config.maxResourceCount || 10;
+    config['rootPath'] = config.rootPath || __dirname;
     config['basePath'] = config.basePath || '';
     config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
     console.log(config);
@@ -162,13 +157,21 @@ else if(!module.parent) {
 
     var hostname = 'localhost';
     var authority = scheme + '://' + hostname + ':' + config.port;
+    rootPath = config.rootPath;
     inboxPath = config.inboxPath;
     queuePath = config.queuePath;
     maxPayloadSize = config.maxPayloadSize;
     maxResourceCount = config.maxResourceCount;
     proxyURL = config.proxyURL;
 
+    app.route('/').all(getTarget);
+    app.route('/index.html').all(getTarget);
+    app.route('/' + inboxPath + ':id?').all(handleResource);
+    app.route('/' + queuePath + ':id').all(handleResource);
+    app.route('/annotation/:id?').all(handleResource);
+
     console.log('process.cwd(): ' + process.cwd());
+    console.log('rootPath: ' + rootPath);
     console.log('curl -i ' + authority);
   });
 }
@@ -543,7 +546,7 @@ function getTarget(req, res, next){
       return next();
     }
 
-    fs.readFile(__dirname + '/index.html', 'utf8', function(error, data){
+    fs.readFile(rootPath + '/index.html', 'utf8', function(error, data){
       if (error) { console.log(error); }
 
       if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
@@ -663,7 +666,7 @@ function handleResource(req, res, next){
             res.end();
           }
 
-          if(path.startsWith(__dirname + '/queue/')) {
+          if(path.startsWith(rootPath + '/' + queuePath)) {
             res.status(200);
             res.send(data);
             res.end();
@@ -875,16 +878,17 @@ function postContainer(req, res, next){
         }
       }
       else {
-        var file = __dirname + '/' + queuePath + fileName;
+        var file = rootPath + '/' + queuePath + fileName;
 // console.log(file);
 
-        gcDirectory(__dirname + '/' + queuePath);
+        gcDirectory(rootPath + '/' + queuePath);
 
         fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available.\n', function() {
           res.status(202);
           res.set('Content-Language', 'en');
           res.set('Content-Type', 'text/plain;charset=utf-8');
-          var location = req.protocol + '://' + req.headers.host + '/queue/' + fileName;
+          var location = req.protocol + '://' + req.headers.host + config['basePath'] + '/' + queuePath + fileName;
+
           res.send('Your request is being processed. Check status: ' + location + '\n');
           res.end();
           return;
