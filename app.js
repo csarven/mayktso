@@ -137,7 +137,7 @@ else if(!module.parent) {
     config['annotationPath'] = config.annotationPath || 'annotation/';
     config['maxPayloadSize'] = config.maxPayloadSize || 10000;
     config['maxResourceCount'] = config.maxResourceCount || 100;
-    config['rootPath'] = config.rootPath || __dirname;
+    config['rootPath'] = config.rootPath || '.';
     config['basePath'] = config.basePath || '';
     config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
     console.log(config);
