@@ -161,7 +161,7 @@ else if(!module.parent) {
     rootPath = config.rootPath;
     inboxPath = config.inboxPath;
     queuePath = config.queuePath;
-    annotatonPath = config.annotatonPath;
+    annotationPath = config.annotatonPath;
     maxPayloadSize = config.maxPayloadSize;
     maxResourceCount = config.maxResourceCount;
     proxyURL = config.proxyURL;
