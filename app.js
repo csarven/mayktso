@@ -135,8 +135,8 @@ else if(!module.parent) {
     config['inboxPath'] = config.inboxPath || 'inbox/';
     config['queuePath'] = config.queuePath || 'queue/';
     config['annotationPath'] = config.annotationPath || 'annotation/';
-    config['maxPayloadSize'] = config.maxPayloadSize || 1000;
-    config['maxResourceCount'] = config.maxResourceCount || 10;
+    config['maxPayloadSize'] = config.maxPayloadSize || 10000;
+    config['maxResourceCount'] = config.maxResourceCount || 100;
     config['rootPath'] = config.rootPath || __dirname;
     config['basePath'] = config.basePath || '';
     config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
