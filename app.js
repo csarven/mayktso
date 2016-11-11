@@ -233,12 +233,12 @@ function help() {
 }
 
 module.exports.discoverInbox = discoverInbox;
-module.exports.getNotificationsArgv = getNotificationsArgv;
-module.exports.getResourceArgv = getResourceArgv;
-module.exports.headResourceArgv = headResourceArgv;
-module.exports.optionsResourceArgv = optionsResourceArgv;
-module.exports.postResourceArgv = postResourceArgv;
-module.exports.putResourceArgv = putResourceArgv;
+module.exports.getInboxNotifications = getInboxNotifications;
+module.exports.getResourceHandler = getResourceHandler;
+module.exports.getResourceHead = getResourceHead;
+module.exports.getResourceOptions = getResourceOptions;
+module.exports.postResource = postResource;
+module.exports.putResource = putResource;
 
 
 function discoverInbox(url){
