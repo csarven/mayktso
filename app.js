@@ -232,6 +232,15 @@ function help() {
   console.log('    m: mimetype or format; jsonld, turtle');
 }
 
+module.exports.discoverInbox = discoverInbox;
+module.exports.getNotificationsArgv = getNotificationsArgv;
+module.exports.getResourceArgv = getResourceArgv;
+module.exports.headResourceArgv = headResourceArgv;
+module.exports.optionsResourceArgv = optionsResourceArgv;
+module.exports.postResourceArgv = postResourceArgv;
+module.exports.putResourceArgv = putResourceArgv;
+
+
 function discoverInbox(url){
   url = url || argv['discoverInbox'];
   if (url.slice(0,4) != 'http') {
