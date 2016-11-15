@@ -1364,6 +1364,7 @@ app,
 
 discoverInbox,
 getInboxNotifications,
+getResource,
 getResourceHandler,
 getResourceHead,
 getResourceOptions,
