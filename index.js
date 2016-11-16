@@ -124,6 +124,7 @@ function init(options){
         req.rawBody = buf.toString(encoding || 'utf8');
       }
     };
+    app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.raw({ verify: rawBodySaver, type: '*/*' }));
 
     app.use(function(req, res, next) {
