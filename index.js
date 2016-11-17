@@ -1086,6 +1086,10 @@ function decodeString(string) {
   return decodeURIComponent(string.replace(/\+/g,  " "));
 }
 
+function htmlEntities(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function getProxyableIRI(url) {
   var pIRI = stripFragmentFromString(url);
   if (typeof document !== 'undefined' && document.location.protocol == 'https:' && pIRI.slice(0, 5).toLowerCase() == 'http:') {
@@ -1363,6 +1367,7 @@ config,
 init,
 app,
 
+htmlEntities,
 discoverInbox,
 getInboxNotifications,
 getResource,
