@@ -744,18 +744,20 @@ function handleResource(req, res, next){
           console.log("Can't readdir: " + req.requestedPath); //throw err;
         }
 
+        var baseURL = req.getUrl().endsWith('/') ? req.getUrl() : req.getUrl() + '/';
+
         var contains = [];
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
           contains.push({
-            "@id": req.getUrl() + file,
+            "@id": baseURL + file,
             "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource' ]
           });
         }
 
 //          "@context": "http://www.w3.org/ns/ldp",
         var data = {
-          "@id": req.getUrl(),
+          "@id": baseURL,
           "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource', 'http://www.w3.org/ns/ldp#Container', 'http://www.w3.org/ns/ldp#BasicContainer' ]
         };
 
