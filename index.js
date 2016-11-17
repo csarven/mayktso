@@ -1200,25 +1200,24 @@ function getResource(url, headers) {
   });
 }
 
-function getResourceOptions(url, options) {
+function getResourceOptions(url, headers) {
   url = url || window.location.origin + window.location.pathname;
-  options = options || {};
+  headers = headers || {};
+  if(typeof headers['Accept'] == 'undefined') {
+      headers['Accept'] = 'application/ld+json';
+  }
+
   return new Promise(function(resolve, reject) {
       var http = new XMLHttpRequest();
       http.open('OPTIONS', url);
+      Object.keys(headers).forEach(function(key) {
+          http.setRequestHeader(key, headers[key]);
+      });
       // http.withCredentials = true;
       http.onreadystatechange = function() {
           if (this.readyState == this.DONE) {
               if (this.status === 200 || this.status === 204) {
-                  if('header' in options) {
-                      if(this.getResponseHeader(options.header)) {
-                          return resolve({'headers': this.getResponseHeader(options.header)});
-                      }
-                      else {
-                          return reject({'message': "'" + options.header + "' header not found"});
-                      }
-                  }
-                  return resolve({'headers': this.getAllResponseHeaders()});
+                  return resolve({xhr: this});
               }
               return reject({status: this.status, xhr: this});
           }
