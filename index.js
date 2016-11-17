@@ -95,15 +95,15 @@ function config(configFile){
 }
 
 function init(options){
-  var argv = minimist(process.argv.slice(2));
-
-  config = (options && options.configFile) ? config(options.configFile) : config();
-  console.log(config);
+  argv = minimist(process.argv.slice(2));
 
   if (process.argv.length > 2) {
-    processArgs(process.argv);
+    processArgs(argv);
   }
   else {
+    config = (options && options.configFile) ? config(options.configFile) : config();
+console.log(config);
+
     app.use(function(req, res, next) {
       res.header('X-Powered-By', mayktsoURI);
       res.header("Access-Control-Allow-Credentials", "true");
@@ -398,7 +398,7 @@ function headResourceHandler(url, headers){
 
   headers = headers || {};
 
-  return getResourceHead(pIRI).then(
+  return getResourceHead(pIRI, headers).then(
     function(response){
       console.log(response.xhr.getAllResponseHeaders());
       var data = '';
@@ -1230,24 +1230,37 @@ function getResourceOptions(url, options) {
   });
 }
 
-function getResourceHead(url, options) {
+function getResponseHeaderValue(response, header) {
+  return new Promise(function(resolve, reject) {
+    if(response.xhr.getResponseHeader(header)) {
+      return resolve({'headers': response.xhr.getResponseHeader(header)});
+    }
+    else {
+      return reject({'message': "'" + header + "' header not found"});
+    }
+  });
+}
+
+function getResourceHead(url, headers) {
   url = url || ((typeof window !== 'undefined') ? window.location.origin + window.location.pathname : '');
-  options = options || {};
+  headers = headers || {};
+  if(typeof headers['Accept'] == 'undefined') {
+      headers['Accept'] = 'application/ld+json';
+  }
+
   return new Promise(function(resolve, reject) {
       var http = new XMLHttpRequest();
       http.open('HEAD', url);
+      Object.keys(headers).forEach(function(key) {
+          http.setRequestHeader(key, headers[key]);
+      });
 //      http.withCredentials = true;
       http.onreadystatechange = function() {
           if (this.readyState == this.DONE) {
-              if('header' in options) {
-                  if(this.getResponseHeader(options.header)) {
-                      return resolve({'headers': this.getResponseHeader(options.header)});
-                  }
-                  else {
-                      return reject({'message': "'" + options.header + "' header not found"});
-                  }
+              if (this.status === 200) {
+                  return resolve({xhr: this});
               }
-              return resolve({xhr: this});
+              return reject({status: this.status, xhr: this});
           }
       };
       http.send();
@@ -1272,7 +1285,11 @@ function getEndpointFromHead(property, url) {
   var pIRI = getProxyableIRI(url);
   console.log('HEAD ' + pIRI);
 
-  return getResourceHead(pIRI, {'header': 'Link'}).then(
+  return getResourceHead(pIRI)
+    .then(function(response){
+      return getResponseHeaderValue(response, 'Link')
+    })
+    .then(
       function(i){
           var linkHeaders = parseLinkHeader(i.headers);
 console.log('  Checking for ' + property);
@@ -1287,7 +1304,7 @@ console.log('  Checking for ' + property);
       function(reason){
           return Promise.reject({'message': "'Link' header not found"});
       }
-  );
+    );
 }
 
 function getEndpointFromRDF(property, url, subjectIRI) {
