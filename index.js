@@ -580,7 +580,7 @@ function getTarget(req, res, next){
       var options = { 'subjectURI': baseURI };
 
       var sendHeaders = function(outputData, contentType) {
-        res.set('Link', '<' + baseURI + config.basePath + config.inboxPath + '>; rel="http://www.w3.org/ns/ldp#inbox", <http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
+        res.set('Link', '<' + baseURI + config.basePath + "/" + config.inboxPath + '>; rel="http://www.w3.org/ns/ldp#inbox", <http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
         res.set('Content-Type', contentType +';charset=utf-8');
         res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
         res.set('ETag', etag(outputData));
