@@ -1402,5 +1402,6 @@ getResourceHead,
 getResourceOptions,
 postResource,
 putResource,
+parseLinkHeader,
 getGraphFromData
 }
