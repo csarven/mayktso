@@ -885,7 +885,11 @@ function postContainer(req, res, next){
                 res.status(400);
                 res.send();
               }
-            );
+            )
+            .catch(function(Error){
+console.log('---- catch');
+console.log(error);
+            });
         }
         else {
           res.status(405);
@@ -1131,7 +1135,7 @@ function postResource(url, slug, data, contentType, links, options) {
           // }
           http.onreadystatechange = function() {
               if (this.readyState == this.DONE) {
-                  if (this.status === 200 || this.status === 201 || this.status === 204) {
+                  if (this.status === 200 || this.status === 201 || this.status === 202 || this.status === 204) {
                       return resolve({xhr: this});
                   }
                   return reject({status: this.status, xhr: this});
@@ -1385,6 +1389,7 @@ config,
 init,
 app,
 
+vocab,
 htmlEntities,
 discoverInbox,
 getInboxNotifications,
