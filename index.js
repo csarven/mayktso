@@ -1398,5 +1398,6 @@ getResourceHandler,
 getResourceHead,
 getResourceOptions,
 postResource,
-putResource
+putResource,
+getGraphFromData
 }
