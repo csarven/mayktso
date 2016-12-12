@@ -1389,6 +1389,7 @@ config,
 init,
 app,
 
+SimpleRDF,
 vocab,
 htmlEntities,
 discoverInbox,
