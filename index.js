@@ -833,9 +833,10 @@ function handleResource(req, res, next){
                 break;
               case 'OPTIONS':
                 res.status(204);
-                res.end();
+                res.send();
                 break;
             }
+            res.end();
             return next();
           },
           function(reason){
