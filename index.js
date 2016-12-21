@@ -986,7 +986,7 @@ function isWritable(file) {
 }
 
 function fileExists(filepath){
-  let flag = true;
+  var flag = true;
   try{
     fs.accessSync(filepath, fs.F_OK);
   }catch(e){
