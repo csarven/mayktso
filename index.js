@@ -67,7 +67,16 @@ if(!module.parent) {
 }
 
 function config(configFile){
-  var config = configFile || require(__dirname + '/config.json') || {};
+  var config = {};
+  if(configFile){
+    config = configFile;
+  }
+  else {
+    var localConfigFile = __dirname + '/config.json';
+    if(fs.statSync(localConfigFile)){
+      config = localConfigFile;
+    }
+  }
 
   config['hostname'] = 'localhost';
   config['port'] = config.port || 3000;
