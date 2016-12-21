@@ -73,7 +73,7 @@ function config(configFile){
   }
   else {
     var localConfigFile = __dirname + '/config.json';
-    if(fs.statSync(localConfigFile)){
+    if(fs.existsSync(localConfigFile)){
       config = localConfigFile;
     }
   }
