@@ -74,7 +74,7 @@ function config(configFile){
   else {
     var localConfigFile = __dirname + '/config.json';
     if(fs.existsSync(localConfigFile)){
-      config = localConfigFile;
+      config = require(__dirname + '/config.json');
     }
   }
 
