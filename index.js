@@ -445,9 +445,10 @@ function optionsResourceArgv(url){
     headers['Accept-Post'] = argv['acceptPost'];
   }
 
-  headResourceHandler(url, headers).then(
+  optionsResourceHandler(url, headers).then(
       function(i){
         console.log(i);
+        return i;
       },
       function(){
         console.log('Error:');
