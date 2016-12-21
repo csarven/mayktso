@@ -69,12 +69,18 @@ if(!module.parent) {
 function config(configFile){
   var config = {};
   if(configFile){
-    config = configFile;
+    config = require(configFile);
   }
   else {
-    var localConfigFile = __dirname + '/config.json';
-    if(fs.existsSync(localConfigFile)){
-      config = require(__dirname + '/config.json');
+    var processConfigFile = process.cwd() + '/config.json';
+    if(fs.existsSync(processConfigFile)){
+      config = require(processConfigFile);
+    }
+    else {
+      var localConfigFile = __dirname + '/config.json';
+      if(fs.existsSync(localConfigFile)){
+        config = require(__dirname + '/config.json');
+      }
     }
   }
 
@@ -95,7 +101,7 @@ function config(configFile){
   }
 
   config['authority'] = config.scheme + '://' + config.hostname + ':' + config.port;
-  config['rootPath'] = config.rootPath || '.';
+  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() : '.');
   config['basePath'] = config.basePath || '';
   config['inboxPath'] = config.inboxPath || 'inbox/';
   config['queuePath'] = config.queuePath || 'queue/';
