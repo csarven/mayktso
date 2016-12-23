@@ -1423,5 +1423,6 @@ getResourceOptions,
 postResource,
 putResource,
 parseLinkHeader,
+getGraph,
 getGraphFromData
 }
