@@ -1425,5 +1425,6 @@ postResource,
 putResource,
 parseLinkHeader,
 getGraph,
-getGraphFromData
+getGraphFromData,
+serializeData
 }
