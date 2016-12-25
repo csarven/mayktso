@@ -1411,6 +1411,7 @@ config,
 init,
 app,
 
+XMLHttpRequest,
 SimpleRDF,
 vocab,
 htmlEntities,
