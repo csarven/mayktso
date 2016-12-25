@@ -866,7 +866,7 @@ function postContainer(req, res, next){
     var fileName;
     var lastPath = url.substr(url.lastIndexOf('/') + 1);
 
-    if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fileExists(path)) {
+    if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fileExists(basePath + lastPath)) {
       fileName = lastPath;
     }
     else if(req.headers['slug'] && req.headers['slug'].length > 0 && !req.headers['slug'].match(/\/?\.\.+\/?/g) && !fileExists(req.requestedPath + req.headers['slug'])) {
