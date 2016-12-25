@@ -198,7 +198,7 @@ console.log(config);
     app.route('/index.html').all(getTarget);
     app.route('/' + config.inboxPath + ':id?').all(handleResource);
     app.route('/' + config.queuePath + ':id').all(handleResource);
-    app.route('/' + config.annotationPath + '/:id?').all(handleResource);
+    app.route('/' + config.annotationPath + ':id?').all(handleResource);
 
 //console.log(app);
 
