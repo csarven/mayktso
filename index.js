@@ -1106,6 +1106,21 @@ function parseLinkHeader(link) {
   return rels;
 }
 
+function parseProfileLinkRelation(s) {
+  var profile = '';
+  var split = s.split(';');
+  if(split.length > 1){
+    split.forEach(function(x){
+      var i = x.trim();
+      if(i.startsWith('profile=')){
+        profile = i.split('=')[1];
+        profile=profile.substr(1, profile.length-1);
+      }
+    })
+  }
+  return profile;
+}
+
 function encodeString(string) {
   return encodeURIComponent(string).replace(/'/g,"%27").replace(/"/g,"%22");
 }
