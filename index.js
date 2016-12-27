@@ -1439,6 +1439,7 @@ getResourceOptions,
 postResource,
 putResource,
 parseLinkHeader,
+parseProfileLinkRelation,
 getGraph,
 getGraphFromData,
 serializeData
