@@ -1427,7 +1427,7 @@ function getInboxNotifications(data, options) {
   );
 }
 
-
+//TODO: clean this up
 module.exports = {
 config,
 init,
@@ -1449,5 +1449,6 @@ parseLinkHeader,
 parseProfileLinkRelation,
 getGraph,
 getGraphFromData,
-serializeData
+serializeData,
+getBaseURL
 }
