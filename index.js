@@ -106,6 +106,7 @@ function config(configFile){
   config['inboxPath'] = config.inboxPath || 'inbox/';
   config['queuePath'] = config.queuePath || 'queue/';
   config['annotationPath'] = config.annotationPath || 'annotation/';
+  config['reportsPath'] = config.reportsPath || 'reports/';
   config['maxPayloadSize'] = config.maxPayloadSize || 10000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
   config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
@@ -199,6 +200,7 @@ console.log(config);
     app.route('/' + config.inboxPath + ':id?').all(handleResource);
     app.route('/' + config.queuePath + ':id').all(handleResource);
     app.route('/' + config.annotationPath + ':id?').all(handleResource);
+    app.route('/' + config.reportsPath + ':id?').all(handleResource);
 
 //console.log(app);
 
