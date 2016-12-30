@@ -606,18 +606,16 @@ function getTarget(req, res, next){
         res.end();
       }
 
-      baseURI = req.getUrl();
-      var s = baseURI.indexOf('index.html');
-      if (s >= 0) {
-          baseURI = baseURI.substring(0, s);
-      }
-
       var fromContentType = 'text/html';
       var toContentType = req.requestedType;
-      var options = { 'subjectURI': baseURI };
+
+      var baseURL = getBaseURL(req.getUrl());
+      var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
+      var basePath = config.basePath.endsWith('/') ? config.basePath : '';
+      var inboxURL = base + basePath + config.inboxPath;
 
       var sendHeaders = function(outputData, contentType) {
-        res.set('Link', '<' + baseURI + config.basePath + "/" + config.inboxPath + '>; rel="http://www.w3.org/ns/ldp#inbox", <http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
+        res.set('Link', '<' + inboxURL + '>; rel="http://www.w3.org/ns/ldp#inbox", <http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
         res.set('Content-Type', contentType +';charset=utf-8');
         res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
         res.set('ETag', etag(outputData));
@@ -633,6 +631,7 @@ function getTarget(req, res, next){
         return next();
       }
       else {
+        var options = { 'subjectURI': base };
         serializeData(data, fromContentType, toContentType, options).then(
           function(transformedData){
             switch(toContentType) {
