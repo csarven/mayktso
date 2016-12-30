@@ -68,27 +68,33 @@ if(!module.parent) {
 
 function getConfigFile(configFile){
   var config = {};
+  //TODO: Build/merge config in steps 1) input 2) cwd 3) local to mayktso 4) defaults in config()
   if(configFile && config.length > 0){
     config = require(configFile);
+    console.log('Applied: ' + configFile);
   }
   else {
     var processConfigFile = process.cwd() + '/config.json';
     if(fs.existsSync(processConfigFile)){
       config = require(processConfigFile);
+      console.log('Applied: ' + processConfigFile);
     }
     else {
       var localConfigFile = __dirname + '/config.json';
       if(fs.existsSync(localConfigFile)){
         config = require(__dirname + '/config.json');
+        console.log('Applied: ' + localConfigFile);
       }
     }
   }
+  // console.log(config);
   return config;
 }
 
 function config(configFile){
   var config = getConfigFile(configFile);
 
+  console.log('Applying defaults:');
   config['hostname'] = 'localhost';
   config['port'] = config.port || 3000;
   config['scheme'] = (config.sslKey && config.sslCert) ? 'https' : 'http';
@@ -128,7 +134,7 @@ function init(options){
     processArgs(argv);
   }
   else {
-    config = (options && options.configFile) ? config(options.configFile) : config();
+    config = (options && options.config) ? options.config : config();
 console.log(config);
 
     createServer(config);
