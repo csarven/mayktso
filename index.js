@@ -91,20 +91,7 @@ function config(configFile){
 
   config['hostname'] = 'localhost';
   config['port'] = config.port || 3000;
-  config['scheme'] = 'http';
-  if (config.sslKey && config.sslCert) {
-    var options = {
-      key: fs.readFileSync(config.sslKey),
-      cert: fs.readFileSync(config.sslCert),
-      requestCert: false
-    };
-    https.createServer(options, app).listen(config.port);
-    config['scheme'] = 'https';
-  }
-  else {
-    http.createServer(app).listen(config.port);
-  }
-
+  config['scheme'] = (config.sslKey && config.sslCert) ? 'https' : 'http';
   config['authority'] = config.scheme + '://' + config.hostname + ':' + config.port;
   config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() : '.');
   config['basePath'] = config.basePath || '';
@@ -120,6 +107,20 @@ function config(configFile){
   return config;
 }
 
+function createServer(config){
+  if (config.sslKey && config.sslCert) {
+    var options = {
+      key: fs.readFileSync(config.sslKey),
+      cert: fs.readFileSync(config.sslCert),
+      requestCert: false
+    };
+    https.createServer(options, app).listen(config.port);
+  }
+  else {
+    http.createServer(app).listen(config.port);
+  }
+}
+
 function init(options){
   argv = minimist(process.argv.slice(2));
 
@@ -129,6 +130,8 @@ function init(options){
   else {
     config = (options && options.configFile) ? config(options.configFile) : config();
 console.log(config);
+
+    createServer(config);
 
     app.use(function(req, res, next) {
       res.header('X-Powered-By', mayktsoURI);
