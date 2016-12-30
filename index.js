@@ -1434,7 +1434,7 @@ function getInboxNotifications(data, options) {
 
 //TODO: clean this up
 module.exports = {
-getConfigFile
+getConfigFile,
 config,
 init,
 app,
