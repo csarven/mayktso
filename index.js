@@ -66,9 +66,9 @@ if(!module.parent) {
   init();
 }
 
-function config(configFile){
+function getConfigFile(configFile){
   var config = {};
-  if(configFile){
+  if(configFile && config.length > 0){
     config = require(configFile);
   }
   else {
@@ -83,6 +83,11 @@ function config(configFile){
       }
     }
   }
+  return config;
+}
+
+function config(configFile){
+  var config = getConfigFile(configFile);
 
   config['hostname'] = 'localhost';
   config['port'] = config.port || 3000;
@@ -1429,6 +1434,7 @@ function getInboxNotifications(data, options) {
 
 //TODO: clean this up
 module.exports = {
+getConfigFile
 config,
 init,
 app,
