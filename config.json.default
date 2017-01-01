@@ -7,7 +7,7 @@
   "basePath": "",
   "inboxPath": "inbox/",
   "queuePath": "queue/",
-  "annotationPath: "annotation/",
+  "annotationPath": "annotation/",
   "maxPayloadSize": 1000,
   "maxResourceCount": 10
 }
