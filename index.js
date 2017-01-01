@@ -188,7 +188,6 @@ console.log(config);
     app.use(function(req, res, next) {
 //      module.exports.accept = accept = accepts(req);
       req.requestedType = req.accepts(availableTypes);
-
       req.requestedPath = config.rootPath + req.originalUrl;
       // console.log(req);
       // console.log(res);
@@ -204,19 +203,15 @@ console.log(config);
       // console.log('req.originalUrl: ' + req.originalUrl);
       // console.log('req.url: ' + req.url);
       // console.log('req.getUrl: ' + req.getUrl());
-      // console.log('__dirname + req.originalUrl: ' +  __dirname + req.originalUrl);
-      // console.log('rootPath + req.originalUrl: ' +  rootPath + req.originalUrl);
+      // console.log('requestedPath: ' + req.requestedPath);
       return next();
     });
 
-    app.route('/').all(getTarget);
-    app.route('/index.html').all(getTarget);
-    app.route('/' + config.inboxPath + ':id?').all(handleResource);
-    app.route('/' + config.queuePath + ':id').all(handleResource);
-    app.route('/' + config.annotationPath + ':id?').all(handleResource);
-    app.route('/' + config.reportsPath + ':id?').all(handleResource);
+    var oR = (options && options.omitRoutes) ? '|' + options.omitRoutes.join('|') : '';
+    var handleRoutes = new RegExp('^(?!/index.html' + oR + ').*$');
 
-//console.log(app);
+    app.route(/^\/(index.html)?$/).all(getTarget);
+    app.route(handleRoutes).all(handleResource);
 
     console.log('process.cwd(): ' + process.cwd());
     console.log('rootPath: ' + config.rootPath);
@@ -677,8 +672,6 @@ function getTarget(req, res, next){
 
 
 function handleResource(req, res, next){
-//  var path = __dirname + req.originalUrl;
-//console.log(path);
   switch(req.method){
     case 'GET': case 'HEAD': case 'OPTIONS':
       break;
