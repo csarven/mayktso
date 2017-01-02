@@ -256,7 +256,7 @@ function processArgs(argv){
 function help() {
   console.log('mayktso: ' + mayktsoURI);
   console.log('  * Running without parameter/option starts server, otherwise:');
-  console.log('  * Usage: node app.js [parameter] [options]');
+  console.log('  * Usage: node index.js [parameter] [options]');
   console.log('    [parameter]');
   console.log('    --help');
   console.log("    --discoverInbox <URI>        Discover a target's Inbox");
@@ -282,20 +282,26 @@ function discoverInbox(url){
     process.exit(1);
   }
 
-  getEndpoint(vocab['ldpinbox']['@id'], url).then(
+  return getEndpoint(vocab['ldpinbox']['@id'], url).then(
     function(i){
-      console.log('Found:');
-      console.dir(i);
+      if(argv['discoverInbox']) {
+        console.log('Found:');
+        console.dir(i);
+      }
+      return i;
     },
     function(reason){
-      console.log('Not Found:');
-      console.dir(reason);
+      if(argv['discoverInbox']){
+        console.log('Not Found:');
+        console.dir(reason);
+      }
+      return reason;
     }
   );
 }
 
 function getNotificationsArgv(url){
-  url = url || argv['getInbox'];
+  url = url || argv['getNotifications'];
   if (url.slice(0,4) != 'http') {
     process.exit(1);
   }
@@ -303,14 +309,14 @@ function getNotificationsArgv(url){
   var headers = {};
   headers['Accept'] = ('accept' in argv) ? (formatToMimeType(argv['accept'])) : 'application/ld+json';
 
-  getResourceHandler(url, headers).then(
+  return getResourceHandler(url, headers).then(
     function(data){
       var options = {
         'contentType': headers['Accept'],
         'subjectURI': url
       }
 
-      getInboxNotifications(data, options).then(
+      return getInboxNotifications(data, options).then(
         function(notifications){
           var contains = [];
           for (var i = 0; i < notifications.length; i++) {
@@ -328,19 +334,26 @@ function getNotificationsArgv(url){
             data['http://www.w3.org/ns/ldp#contains'] = contains;
           }
 
-          data = JSON.stringify(data) + "\n";
+          if(argv['getNotifications']){
+            var c = JSON.stringify(data) + "\n";
+            console.log(c);
+          }
 
-          console.log(data);
+          return data;
         },
         function(reason){
-          console.log('Error:');
-          console.log(reason);
+          if(argv['getNotifications']){
+            console.log('Error:');
+            console.log(reason);
+          }
+          return reason;
         }
       );
     },
     function(reason){
       console.log('Error:');
       console.log(reason);
+      return reason;
     }
   );
 }
@@ -1443,6 +1456,7 @@ app,
 XMLHttpRequest,
 SimpleRDF,
 vocab,
+RDFstore,
 htmlEntities,
 discoverInbox,
 getInboxNotifications,
