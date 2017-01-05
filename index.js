@@ -1181,8 +1181,8 @@ function stripFragmentFromString(string) {
 function postResource(url, slug, data, contentType, links, options) {
   if (url && url.length > 0) {
       contentType = contentType || 'text/html;charset=utf-8';
-      var ldpResource = '<http://www.w3.org/ns/ldp#Resource>; rel="type"';
-      links = (links) ? ldpResource + ', ' + links : ldpResource;
+//      var ldpResource = '<http://www.w3.org/ns/ldp#Resource>; rel="type"';
+//      links = (links) ? ldpResource + ', ' + links : ldpResource;
       options = options || {};
 
       return new Promise(function(resolve, reject) {
