@@ -1189,7 +1189,7 @@ function postResource(url, slug, data, contentType, links, options) {
           var http = new XMLHttpRequest();
           http.open('POST', url);
           http.setRequestHeader('Content-Type', contentType);
-          http.setRequestHeader('Link', links);
+          // http.setRequestHeader('Link', links);
           if (slug && slug.length > 0) {
               http.setRequestHeader('Slug', slug);
           }
