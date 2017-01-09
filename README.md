@@ -18,7 +18,7 @@ Dive into [issues](https://github.com/csarven/mayktso/issues) because it is fun.
 Server runs on http://localhost:3000/ by default:
 
 ```shell
-$ node app.js
+$ node index.js
 ```
 
 ### Config
@@ -64,10 +64,10 @@ specified. Requests are relative to this location.
 
 ### Command line
 ```shell
-$ node app.js --help
+$ node index.js --help
 mayktso: https://github.com/csarven/mayktso
   * Running without parameter/option starts server, otherwise:
-  * Usage: node app.js [parameter] [options]
+  * Usage: node index.js [parameter] [options]
     [parameter]
     --help
     --discoverInbox <URI>        Discover a target's Inbox
@@ -87,16 +87,16 @@ mayktso: https://github.com/csarven/mayktso
 ```
 
 ```shell
-$ node app.js --discoveryInbox http://localhost:3000/ --accept \
+$ node index.js --discoveryInbox http://localhost:3000/ --accept \
 application/ld+json
-$ node app.js --getNotifications http://localhost:3000/inbox/abc --accept \
+$ node index.js --getNotifications http://localhost:3000/inbox/abc --accept \
 application/ld+json
-$ node app.js --head http://localhost:3000/
-$ node app.js --get http://localhost:3000/ --accept application/ld+json
-$ node app.js --post http://localhost:3000/inbox/ --slug foo \
+$ node index.js --head http://localhost:3000/
+$ node index.js --get http://localhost:3000/ --accept application/ld+json
+$ node index.js --post http://localhost:3000/inbox/ --slug foo \
 --contentType application/ld+json -d \
 '[{"@id":"http://example.org/foo","http://schema.org/name":"Foo"}]'
-$ node app.js --put http://localhost:3000/inbox/ --contentType \
+$ node index.js --put http://localhost:3000/inbox/ --contentType \
 application/ld+json -d \
 '[{"@id":"http://example.org/foo","http://schema.org/name":"Foo"}]'
 ```
