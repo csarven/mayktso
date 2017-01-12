@@ -54,7 +54,10 @@ var vocab = {
   "ldpresource": { "@id": "http://www.w3.org/ns/ldp#Resource", "@type": "@id", "@array": true  },
   "ldpcontainer": { "@id": "http://www.w3.org/ns/ldp#Container", "@type": "@id", "@array": true  },
   "ldpbasiccontainer": { "@id": "http://www.w3.org/ns/ldp#BasicContainer", "@type": "@id", "@array": true  },
-  "ldpconstrainedBy": { "@id": "http://www.w3.org/ns/ldp#constrainedBy", "@type": "@id", "@array": true  }
+  "ldpconstrainedBy": { "@id": "http://www.w3.org/ns/ldp#constrainedBy", "@type": "@id", "@array": true  },
+  "rdfsseeAlso": { "@id": "http://www.w3.org/2000/01/rdf-schema#seeAlso", "@type": "@id", "@array": true },
+  "foafprimaryTopic": { "@id": "http://xmlns.com/foaf/0.1/primaryTopic", "@type": "@id" },
+  "owlsameAs": { "@id": "http://www.w3.org/2002/07/owl#sameAs", "@type": "@id", "@array": true }
 };
 
 var argv;
