@@ -707,7 +707,7 @@ function handleResource(req, res, next){
       break;
   }
 
-  if(!req.requestedType || rdfaTypes.indexOf(req.requestedType) > -1 || req.requestedType == 'application/rdf+xml'){
+  if(!req.requestedType){
     res.status(406);
     res.end();
     return next();
@@ -754,6 +754,13 @@ function handleResource(req, res, next){
                       'result': 'fail',
                       'data': error });
                   }
+                }
+                else if(rdfaTypes.indexOf(fromContentType) > -1 && rdfaTypes.indexOf(req.requestedType) > -1)  {
+                    return Promise.resolve({
+                      'fromContentType': fromContentType,
+                      'toContentType': toContentType,
+                      'result': 'pass',
+                      'data': data });
                 }
 
                 return serializeData(data, fromContentType, toContentType, options).then(
