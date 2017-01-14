@@ -948,8 +948,7 @@ function postContainer(req, res, next){
     try { JSON.parse(data) }
     catch(e) { res.status(400); res.send(); }
   }
-  if(req.is('application/ld+json') || req.is('text/turtle')) {
-
+  if(availableTypes.indexOf(mediaType) > -1) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < config.maxPayloadSize) ? true : false;
     var url = req.getUrl();
