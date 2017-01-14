@@ -16,6 +16,8 @@ var SimpleRDFParse = require('simplerdf-parse')
 var formats = {parsers: {}}
 formats.parsers['application/ld+json'] = JsonLdParser
 formats.parsers['text/turtle'] = N3Parser
+// formats.parsers['text/n3'] = N3Parser
+// formats.parsers['application/n-triples'] = N3Parser
 formats.parsers['application/xhtml+xml'] = RdfaParser
 formats.parsers['text/html'] = RdfaParser
 formats.parsers['application/rdf+xml'] = RdfXmlParser
@@ -25,6 +27,8 @@ SimpleRDF.parse = parser.parse.bind(parser)
 var storeFormats = {parsers:{}}
 storeFormats.parsers['application/ld+json'] = JsonLdParser
 storeFormats.parsers['text/turtle'] = N3Parser
+// storeFormats.parsers['text/n3'] = N3Parser
+// storeFormats.parsers['application/n-triples'] = N3Parser
 storeFormats.parsers['application/xhtml+xml'] = RdfaParser
 storeFormats.parsers['text/html'] = RdfaParser
 storeFormats.parsers['application/rdf+xml'] = RdfXmlParser
@@ -44,7 +48,8 @@ var XMLHttpRequest = require('xhr2');
 var contentType = require('content-type');
 var bodyParser = require('body-parser');
 
-var availableTypes = ['application/ld+json', 'text/turtle'];
+var availableTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
+var rdfaTypes = ['application/xhtml+xml', 'text/html'];
 var mayktsoURI = 'https://github.com/csarven/mayktso';
 
 var vocab = {
@@ -702,7 +707,7 @@ function handleResource(req, res, next){
       break;
   }
 
-  if(!req.requestedType) {
+  if(!req.requestedType || rdfaTypes.indexOf(req.requestedType) > -1 || req.requestedType == 'application/rdf+xml'){
     res.status(406);
     res.end();
     return next();
@@ -735,47 +740,99 @@ function handleResource(req, res, next){
 
           var toContentType = req.requestedType;
           var options = { 'subjectURI': req.getUrl() };
-          var unserializeableCount = 0;
 
-          availableTypes.forEach(function(fromContentType){
-            serializeData(data, fromContentType, toContentType, options).then(
-              function(transformedData){
-                var outputData = (fromContentType != toContentType) ? transformedData : data;
-
-                res.set('Content-Type', req.requestedType +';charset=utf-8');
-                res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
-                res.set('ETag', etag(outputData));
-                res.set('Last-Modified', stats.mtime);
-                res.set('Vary', 'Origin');
-                res.set('Allow', 'GET, HEAD, OPTIONS');
-
-                switch(req.method) {
-                  case 'GET': default:
-                    res.status(200);
-                    res.send(outputData);
-                    break;
-                  case 'HEAD':
-                    res.status(200);
-                    res.send();
-                    break;
-                  case 'OPTIONS':
-                    res.status(204);
-                    res.end();
-                    break;
+          var testSerializations = function(){
+            var checkSerializations = [];
+            availableTypes.forEach(function(fromContentType){
+              var serialize = function() {
+                if(fromContentType == 'application/ld+json'){
+                  try { JSON.parse(data) }
+                  catch(e) {
+                    return Promise.resolve({
+                      'fromContentType': fromContentType,
+                      'toContentType': toContentType,
+                      'result': 'fail',
+                      'data': error });
+                  }
                 }
 
-                return next();
-              },
-              function(reason){
-                unserializeableCount++;
-                if(availableTypes.length == unserializeableCount) {
+                return serializeData(data, fromContentType, toContentType, options).then(
+                  function(transformedData){
+                    var outputData = (fromContentType != toContentType) ? transformedData : data;
+// console.log(outputData);
+                    return {
+                      'fromContentType': fromContentType,
+                      'toContentType': toContentType,
+                      'result': 'pass',
+                      'data': outputData };
+                  },
+                  function(error){
+                    // console.log(error);
+                    return Promise.resolve({
+                      'fromContentType': fromContentType,
+                      'toContentType': toContentType,
+                      'result': 'fail',
+                      'data': error });
+                  });
+              };
+
+              checkSerializations.push(serialize());
+            });
+
+            return Promise.all(checkSerializations)
+              .then((serializations) => {
+                // console.log(serializations);
+                //If no successful transformation. File malformed?
+                if(serializations
+                    .map(function(e){return e.result;})
+                    .indexOf('pass') < 0){
                   res.status(500);
                   res.end();
                   return next();
                 }
-              }
-            );
-          });
+                else {
+                  var responseSent = false;
+                  serializations.forEach(function(s){
+// console.log(s);
+// console.log(s.fromContentType);
+                    if(s.result == 'pass' && !responseSent){
+                      responseSent = true;
+                      outputData = (s.fromContentType == req.requestedType) ? data : s.data;
+
+                      res.set('Content-Type', req.requestedType +';charset=utf-8');
+                      res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
+                      res.set('ETag', etag(outputData));
+                      res.set('Last-Modified', stats.mtime);
+                      res.set('Vary', 'Origin');
+                      res.set('Allow', 'GET, HEAD, OPTIONS');
+
+                      switch(req.method) {
+                        case 'GET': default:
+                          res.status(200);
+                          res.send(outputData);
+                          break;
+                        case 'HEAD':
+                          res.status(200);
+                          res.send();
+                          break;
+                        case 'OPTIONS':
+                          res.status(204);
+                          break;
+                      }
+
+                      res.end();
+                      return next();
+                    }
+                  });
+                }
+              })
+              .catch((error) => {
+                console.log('--- catch: `return Promise.all(checkSerializations)` ');
+                console.log(error);
+              });
+          }
+
+          testSerializations();
         });
       }
       else {
