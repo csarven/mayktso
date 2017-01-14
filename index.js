@@ -977,7 +977,7 @@ function postContainer(req, res, next){
 //console.log(stats);
 
       if(createRequest) {
-        if(stats.isDirectory()) {
+        if(stats.isDirectory() && isWritable(req.requestedPath)) {
             var file = basePath + fileName;
             var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
             var uri = base + fileName;
