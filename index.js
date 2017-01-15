@@ -219,7 +219,9 @@ console.log(config);
     var handleRoutes = new RegExp('^(?!/index.html' + oR + ').*$');
 
     app.route(/^\/(index.html)?$/).all(getTarget);
-    app.route(handleRoutes).all(handleResource);
+    app.route(handleRoutes).all(function(res, req, next){
+      handleResource(res, req, next, { jsonld: { profile: 'http://www.w3.org/ns/json-ld#expanded' }});
+    });
 
     console.log('process.cwd(): ' + process.cwd());
     console.log('rootPath: ' + config.rootPath);
@@ -692,7 +694,9 @@ function getTarget(req, res, next){
 }
 
 
-function handleResource(req, res, next){
+function handleResource(req, res, next, options){
+  options = options || {};
+
   switch(req.method){
     case 'GET': case 'HEAD': case 'OPTIONS':
       break;
@@ -739,7 +743,7 @@ function handleResource(req, res, next){
           }
 
           var toContentType = req.requestedType;
-          var options = { 'subjectURI': req.getUrl() };
+          var serializeOptions = { 'subjectURI': req.getUrl() };
 
           var testSerializations = function(){
             var checkSerializations = [];
@@ -763,7 +767,7 @@ function handleResource(req, res, next){
                       'data': data });
                 }
 
-                return serializeData(data, fromContentType, toContentType, options).then(
+                return serializeData(data, fromContentType, toContentType, serializeOptions).then(
                   function(transformedData){
                     var outputData = (fromContentType != toContentType) ? transformedData : data;
 // console.log(outputData);
@@ -855,23 +859,44 @@ function handleResource(req, res, next){
 
         var baseURL = req.getUrl().endsWith('/') ? req.getUrl() : req.getUrl() + '/';
 
+        var profile = 'http://www.w3.org/ns/json-ld#expanded';
+        var data, nsLDP = '';
+        if(typeof options !== 'undefined' && 'jsonld' in options && 'profile' in options.jsonld){
+          switch(options.jsonld.profile){
+            default:
+              profile = 'http://www.w3.org/ns/json-ld#expanded';
+              nsLDP = 'http://www.w3.org/ns/ldp#';
+              break;
+            case 'http://www.w3.org/ns/json-ld#compacted':
+              profile = 'http://www.w3.org/ns/json-ld#compacted';
+              break;
+          }
+        }
+
         var contains = [];
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
           contains.push({
             "@id": baseURL + file,
-            "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource' ]
+            "@type": [ nsLDP + 'Resource', nsLDP + 'RDFSource' ]
           });
         }
 
-//          "@context": "http://www.w3.org/ns/ldp",
-        var data = {
+        var data = {};
+        if(profile == 'http://www.w3.org/ns/json-ld#compacted'){
+          data["@context"] = 'http://www.w3.org/ns/ldp';
+        }
+        data = Object.assign(data, {
           "@id": baseURL,
-          "@type": [ 'http://www.w3.org/ns/ldp#Resource', 'http://www.w3.org/ns/ldp#RDFSource', 'http://www.w3.org/ns/ldp#Container', 'http://www.w3.org/ns/ldp#BasicContainer' ]
-        };
+          "@type": [ nsLDP+'Resource', nsLDP+'RDFSource', nsLDP+'Container', nsLDP+'BasicContainer' ]
+        });
 
         if(contains.length > 0) {
-          data['http://www.w3.org/ns/ldp#contains'] = contains;
+          data[nsLDP+'contains'] = contains;
+        }
+
+        if(profile == 'http://www.w3.org/ns/json-ld#expanded'){
+          data = [data];
         }
 
         data = JSON.stringify(data) + "\n";
@@ -884,12 +909,8 @@ function handleResource(req, res, next){
             else {
               var fromContentType = 'application/ld+json';
               var toContentType = req.requestedType;
-              var options = { 'subjectURI': req.getUrl() };
-
-              return serializeData(data, fromContentType, toContentType, options).then(
-                function(i) { resolve(i); },
-                function(j) { reject(j); }
-              );
+              var serializeOptions = { 'subjectURI': req.getUrl() };
+              return resolve(serializeData(data, fromContentType, toContentType, serializeOptions));
             }
           });
         };
@@ -902,8 +923,13 @@ function handleResource(req, res, next){
               return next();
             }
 
+            parameterProfile = '';
+            if(req.requestedType == 'application/ld+json') {
+              parameterProfile = ';profile="'+profile+'"';
+            }
+
             res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type", <http://www.w3.org/ns/ldp#Container>; rel="type", <http://www.w3.org/ns/ldp#BasicContainer>; rel="type"');
-            res.set('Content-Type', req.requestedType + ';charset=utf-8');
+            res.set('Content-Type', req.requestedType + ';charset=utf-8' + parameterProfile);
             res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
             res.set('ETag', etag(data));
             res.set('Last-Modified', stats.mtime);
@@ -1538,5 +1564,6 @@ parseProfileLinkRelation,
 getGraph,
 getGraphFromData,
 serializeData,
-getBaseURL
+getBaseURL,
+handleResource
 }
