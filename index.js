@@ -693,6 +693,55 @@ function getTarget(req, res, next){
   });
 }
 
+function getSerialization(data, fromContentType, toContentType, serializeOptions, requestedType) {
+// console.log('- - -' + fromContentType + ' ' + toContentType + ' ' + requestedType)
+  if(fromContentType == 'application/ld+json'){
+    try { JSON.parse(data) }
+    catch(error) {
+      return Promise.resolve({
+        'fromContentType': fromContentType,
+        'toContentType': toContentType,
+        'result': 'fail',
+        'data': error });
+    }
+  }
+
+  return serializeData(data, fromContentType, toContentType, serializeOptions).then(
+    function(transformedData){
+      var outputData = (fromContentType == toContentType) ? data : transformedData;
+// console.log(outputData);
+
+      if(requestedType){
+        if(requestedType == toContentType || rdfaTypes.indexOf(requestedType) > -1) {
+          return {
+            'fromContentType': fromContentType,
+            'toContentType': toContentType,
+            'result': 'pass',
+            'data': outputData };
+        }
+        else {
+// console.log('     ' + fromContentType + ' ' + toContentType + ' ' + requestedType)
+          return getSerialization(data, fromContentType, requestedType, serializeOptions, requestedType);
+        }
+      }
+      else {
+        return {
+          'fromContentType': fromContentType,
+          'toContentType': toContentType,
+          'result': 'pass',
+          'data': outputData };
+      }
+    },
+    function(error){
+      // console.log(error);
+      return Promise.resolve({
+        'fromContentType': fromContentType,
+        'toContentType': toContentType,
+        'result': 'fail',
+        'data': error });
+    });
+}
+
 
 function handleResource(req, res, next, options){
   options = options || {};
@@ -725,7 +774,6 @@ function handleResource(req, res, next, options){
 
     if (stats.isFile()) {
       var isReadable = stats.mode & 4 ? true : false;
-// //console.log('-- isReadable: ' + isReadable);
       if (isReadable) {
         fs.readFile(req.requestedPath, 'utf8', function(error, data){
           if (error) { console.log(error); }
@@ -745,70 +793,42 @@ function handleResource(req, res, next, options){
           var toContentType = req.requestedType;
           var serializeOptions = { 'subjectURI': req.getUrl() };
 
-          var testSerializations = function(){
+          var doSerializations = function(data, serializeOptions){
             var checkSerializations = [];
             availableTypes.forEach(function(fromContentType){
-              var serialize = function() {
-                if(fromContentType == 'application/ld+json'){
-                  try { JSON.parse(data) }
-                  catch(e) {
-                    return Promise.resolve({
-                      'fromContentType': fromContentType,
-                      'toContentType': toContentType,
-                      'result': 'fail',
-                      'data': error });
-                  }
-                }
-                else if(rdfaTypes.indexOf(fromContentType) > -1 && rdfaTypes.indexOf(req.requestedType) > -1)  {
-                    return Promise.resolve({
-                      'fromContentType': fromContentType,
-                      'toContentType': toContentType,
-                      'result': 'pass',
-                      'data': data });
-                }
-
-                return serializeData(data, fromContentType, toContentType, serializeOptions).then(
-                  function(transformedData){
-                    var outputData = (fromContentType != toContentType) ? transformedData : data;
-// console.log(outputData);
-                    return {
-                      'fromContentType': fromContentType,
-                      'toContentType': toContentType,
-                      'result': 'pass',
-                      'data': outputData };
-                  },
-                  function(error){
-                    // console.log(error);
-                    return Promise.resolve({
-                      'fromContentType': fromContentType,
-                      'toContentType': toContentType,
-                      'result': 'fail',
-                      'data': error });
-                  });
-              };
-
-              checkSerializations.push(serialize());
+              //XXX: toContentType is application/ld+json because we need to see what is serializable since text/html doesn't have a serializer yet. This is not great because we have to rerun the getSerialization in some cases eg resource is Turtle, fromContentType is text/turtle, toContentType is application/ld+json gives a success but the request is text/turtle so we reuse the requestedType in place of toContentType in the second time around.
+              checkSerializations.push(getSerialization(data, fromContentType, 'application/ld+json', serializeOptions, req.requestedType));
             });
 
             return Promise.all(checkSerializations)
               .then((serializations) => {
-                // console.log(serializations);
-                //If no successful transformation. File malformed?
+// console.log(serializations);
+                //If no successful transformation.
                 if(serializations
                     .map(function(e){return e.result;})
                     .indexOf('pass') < 0){
-                  res.status(500);
+                  res.status(406);
                   res.end();
                   return next();
                 }
                 else {
                   var responseSent = false;
                   serializations.forEach(function(s){
-// console.log(s);
-// console.log(s.fromContentType);
                     if(s.result == 'pass' && !responseSent){
                       responseSent = true;
-                      outputData = (s.fromContentType == req.requestedType) ? data : s.data;
+                      //XXX: If success was due to resource being HTML return the data as is, otherwise we can't serialize
+                      var outputData = (req.requestedType == s.fromContentType) ? data : s.data;
+// console.log(s);
+                      if(rdfaTypes.indexOf(req.requestedType) > -1){
+                        if(rdfaTypes.indexOf(s.fromContentType) > -1){
+                          outputData = data;
+                        }
+                        else {
+                          res.status(406);
+                          res.end();
+                          return next();
+                        }
+                      }
 
                       res.set('Content-Type', req.requestedType +';charset=utf-8');
                       res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
@@ -840,10 +860,13 @@ function handleResource(req, res, next, options){
               .catch((error) => {
                 console.log('--- catch: `return Promise.all(checkSerializations)` ');
                 console.log(error);
+                res.status(500);
+                res.end();
+                return next();
               });
           }
 
-          testSerializations();
+          doSerializations(data, serializeOptions);
         });
       }
       else {
@@ -910,7 +933,17 @@ function handleResource(req, res, next, options){
               var fromContentType = 'application/ld+json';
               var toContentType = req.requestedType;
               var serializeOptions = { 'subjectURI': req.getUrl() };
-              return resolve(serializeData(data, fromContentType, toContentType, serializeOptions));
+
+              if(rdfaTypes.indexOf(toContentType) > -1){
+                return reject({'toContentType': 'text/html'});
+              }
+              else {
+                //TODO: the resolve/reject should happen at a lower-level.
+                return serializeData(data, fromContentType, toContentType, options).then(
+                  function(i) { resolve(i); },
+                  function(j) { reject(j); }
+                );
+              }
             }
           });
         };
@@ -955,7 +988,12 @@ function handleResource(req, res, next, options){
             return next();
           },
           function(reason){
-            res.status(500);
+            if('toContentType' in reason && reason.toContentType == 'text/html'){
+              res.status(406);
+            }
+            else {
+              res.status(500);
+            }
             res.end();
             return next();
           }
