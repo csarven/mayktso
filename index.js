@@ -1603,5 +1603,6 @@ getGraph,
 getGraphFromData,
 serializeData,
 getBaseURL,
-handleResource
+handleResource,
+getSerialization
 }
