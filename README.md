@@ -6,9 +6,9 @@ Encounters at an endpoint.
 * Server can receive HTTP `HEAD`, `OPTIONS`, `GET`, `POST`, `PUT` requests.
 Content negotiation with `text/turtle`, `application/ld+json`, `text/html`,
 `application/xhtml+xml`
-* Conformant
-[Linked Data Notifications receiver](https://www.w3.org/TR/ldn#receiving).TODO:
-Serialisation to HTML+RDFa
+* Conforming
+[Linked Data Notifications](https://www.w3.org/TR/ldn/) sender, receiver, sender.
+TODO: Serialisation to HTML+RDFa
 * The server speaks a little bit of LDP. It doesn't do
 authenication/authorisation yet.
 
@@ -33,7 +33,7 @@ Optional config use: `cp config.json.default config.json`
   "basePath": "",
   "inboxPath": "inbox/",
   "queuePath": "queue/",
-  "maxPayloadSize": 1000,
+  "maxPayloadSize": 100000,
   "maxResourceCount": 10
 }
 ```
@@ -52,7 +52,7 @@ e.g., `basePath: "/foo/bar/"`
 
 * `inboxPath` and `queuePath` are relative to root e.g.,
 http://localhost:3000/{inbox,queue}/
-* queue is used for HTTP 202 responses (default for payload above 1000 bytes).
+* queue is used for HTTP 202 responses (default for payload above maxPayloadSize in bytes).
 Status: Testing
 * `rootPath` defaults to the current directory (`.`) or a full path can be
 specified. Requests are relative to this location.
