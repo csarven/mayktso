@@ -1021,15 +1021,19 @@ function postContainer(req, res, next){
 
     var fileName;
     var lastPath = url.substr(url.lastIndexOf('/') + 1);
+    var pathWriteable = false;
 
     if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fileExists(basePath + lastPath)) {
       fileName = lastPath;
+      pathWriteable = true;
     }
     else if(req.headers['slug'] && req.headers['slug'].length > 0 && !req.headers['slug'].match(/\/?\.\.+\/?/g) && !fileExists(req.requestedPath + req.headers['slug'])) {
       fileName = req.headers['slug'];
+      pathWriteable = true;
     }
     else {
       fileName = uuid.v1();
+      pathWriteable = true;
     }
 
     fs.stat(basePath, function(error, stats) {
@@ -1041,7 +1045,7 @@ function postContainer(req, res, next){
 //console.log(stats);
 
       if(createRequest) {
-        if(stats.isDirectory() && isWritable(req.requestedPath)) {
+        if(stats.isDirectory() && pathWriteable) {
             var file = basePath + fileName;
             var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
             var uri = base + fileName;
