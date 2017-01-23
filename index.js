@@ -150,7 +150,7 @@ console.log(config);
     app.use(function(req, res, next) {
       res.header('X-Powered-By', mayktsoURI);
       res.header("Access-Control-Allow-Credentials", "true");
-      res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS, POST");
+      res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS, POST, PUT");
       if(req.header('Origin')) {
         res.header("Access-Control-Allow-Origin", req.header('Origin'));
       }
