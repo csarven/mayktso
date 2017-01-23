@@ -768,7 +768,17 @@ function handleResource(req, res, next, options){
 
   fs.stat(req.requestedPath, function(error, stats) {
     if (error) {
-      res.status(404);
+      if(req.method == 'OPTIONS'){
+        res.set('Content-Type', 'text/plain');
+        res.set('Content-Length', '0');
+        res.set('Vary', 'Origin');
+        res.set('Allow', 'GET, HEAD, OPTIONS, PUT, POST');
+        res.status(204);
+        res.end();
+      }
+      else {
+        res.status(404);
+      }
       return next();
     }
 
