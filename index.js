@@ -219,8 +219,8 @@ console.log(config);
     var handleRoutes = new RegExp('^(?!/index.html' + oR + ').*$');
 
     app.route(/^\/(index.html)?$/).all(getTarget);
-    app.route(handleRoutes).all(function(res, req, next){
-      handleResource(res, req, next, { jsonld: { profile: 'http://www.w3.org/ns/json-ld#expanded' }});
+    app.route(handleRoutes).all(function(req, res, next){
+      handleResource(req, res, next, { jsonld: { profile: 'http://www.w3.org/ns/json-ld#expanded' }});
     });
 
     console.log('process.cwd(): ' + process.cwd());
