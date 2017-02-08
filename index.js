@@ -1193,6 +1193,15 @@ function getBaseURL(url) {
   return url;
 }
 
+function getExternalBaseURL(url) {
+  var baseURL = getBaseURL(url);
+  var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
+  var basePath = config.basePath.endsWith('/') ? config.basePath : '';
+
+  return base + basePath;
+}
+
+
 function formatToMimeType(format){
   switch(format){
     case 'jsonld':
@@ -1617,6 +1626,7 @@ getGraph,
 getGraphFromData,
 serializeData,
 getBaseURL,
+getExternalBaseURL,
 handleResource,
 getSerialization
 }
