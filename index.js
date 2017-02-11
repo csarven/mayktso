@@ -171,8 +171,15 @@ console.log(config);
     app.use(bodyParser.raw({ verify: rawBodySaver, type: '*/*' }));
 
     app.use(function(req, res, next) {
+      req.getRootUrl = function() {
+        return req.protocol + "://" + req.header('host') + config.basePath;
+      }
+      return next();
+    });
+
+    app.use(function(req, res, next) {
       req.getUrl = function() {
-        return req.protocol + "://" + req.header('host') + config.basePath + req.originalUrl;
+        return req.getRootUrl() + req.originalUrl;
       }
       return next();
     });
