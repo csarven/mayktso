@@ -1048,6 +1048,11 @@ function postContainer(req, res, next){
       fileName = req.headers['slug'];
       pathWriteable = true;
     }
+    //XXX: This will let the path to be overwritten.
+    else if('id' in req.query && req.query.id.length > 0){
+      fileName = req.query.id;
+      pathWriteable = true;
+    }
     else {
       fileName = uuid.v1();
       pathWriteable = true;
