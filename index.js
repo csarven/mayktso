@@ -757,7 +757,7 @@ function handleResource(req, res, next, options){
     case 'GET': case 'HEAD': case 'OPTIONS':
       break;
     case 'POST': case 'PUT':
-      return postContainer(req, res, next);
+      return postContainer(req, res, next, options);
       break;
     default:
       res.status(405);
@@ -1021,7 +1021,7 @@ function handleResource(req, res, next, options){
   });
 }
 
-function postContainer(req, res, next){
+function postContainer(req, res, next, options){
   var data = req.rawBody;
   var mediaType = contentType.parse(req.headers['content-type']).type;
 
@@ -1049,7 +1049,7 @@ function postContainer(req, res, next){
       pathWriteable = true;
     }
     //XXX: This will let the path to be overwritten.
-    else if('id' in req.query && req.query.id.length > 0){
+    else if('id' in req.query && req.query.id.length > 0 && typeof options !== 'undefined' && options.allowSlug){
       fileName = req.query.id;
       pathWriteable = true;
     }
@@ -1110,7 +1110,7 @@ console.log(error);
 
         gcDirectory(config.rootPath + '/' + config.queuePath);
 
-        fs.appendFile(file, 'Sorry your request was rejected. This URL will no longer be available.\n', function() {
+        fs.writeFile(file, 'Sorry your request was rejected. This URL will no longer be available.\n', function() {
           res.status(202);
           res.set('Content-Language', 'en');
           res.set('Content-Type', 'text/plain;charset=utf-8');
