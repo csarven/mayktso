@@ -1058,6 +1058,7 @@ function postContainer(req, res, next){
       pathWriteable = true;
     }
 
+    //XXX: The API does not recommended to use fs.stat before fs.open/readFile/writeFile()
     fs.stat(basePath, function(error, stats) {
       if(error) {
         res.status(404);
@@ -1075,7 +1076,8 @@ function postContainer(req, res, next){
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
                 gcDirectory(basePath);
-                fs.appendFile(file, data, function(x) {
+                //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
+                fs.writeFile(file, data, function(x) {
 // console.log(uri);
                   res.set('Location', uri);
                   res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
