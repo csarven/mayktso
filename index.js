@@ -1084,6 +1084,7 @@ function postContainer(req, res, next, options){
                   res.status(201);
                   res.send();
                   res.end();
+                  storeMeta(req, res, next, options);
                   return;
                 });
               },
@@ -1128,6 +1129,13 @@ console.log(error);
     res.end();
   }
 }
+
+function storeMeta(req, res, next, options){
+  if(typeof options !== 'undefined' && 'storeMeta' in options && options.storeMeta){
+console.log(res);
+  }
+}
+
 
 function deleteResource(path){
   if (!path) { return; }
