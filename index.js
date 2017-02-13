@@ -1084,7 +1084,7 @@ function postContainer(req, res, next, options){
                   res.status(201);
                   res.send();
                   res.end();
-                  storeMeta(req, res, next, options);
+                  storeMeta(req, res, next, Object.assign(options, { storeMetaPath : file + '.json' }));
                   return;
                 });
               },
@@ -1131,8 +1131,20 @@ console.log(error);
 }
 
 function storeMeta(req, res, next, options){
-  if(typeof options !== 'undefined' && 'storeMeta' in options && options.storeMeta){
-console.log(res);
+  if(typeof options !== 'undefined' && 'storeMeta' in options && options.storeMeta && 'storeMetaPath' in options && options.storeMetaPath.length > 0){
+    // console.log(req)
+    // console.log(res);
+    // console.log(JSON.stringify(req.headers));
+    // console.log(JSON.stringify(res.headers));
+    var data = {
+      req: { headers: req.headers, rawBody: req.rawBody },
+      res: { headers: res.header()._header }
+    };
+    // console.log(options.storeMetaPath);
+// console.log(res.header()._header);
+// console.log(data);
+// console.log(JSON.stringify(data));
+    fs.writeFile(options.storeMetaPath, JSON.stringify(data));
   }
 }
 
@@ -1332,6 +1344,10 @@ function decodeString(string) {
 
 function htmlEntities(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function preSafe(s) {
+  return String(s).replace(/\\"/g, '"').replace(/\\r\\n/g, "\n").replace(/\"/g, '"').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/^\s+|\s+$/g, '').trim();
 }
 
 function getProxyableIRI(url) {
@@ -1634,6 +1650,7 @@ SimpleRDF,
 vocab,
 RDFstore,
 htmlEntities,
+preSafe,
 discoverInbox,
 getInboxNotifications,
 getResource,
