@@ -1347,7 +1347,7 @@ function htmlEntities(s) {
 }
 
 function preSafe(s) {
-  return String(s).replace(/\\"/g, '"').replace(/\\r\\n/g, "\n").replace(/\"/g, '"').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/^\s+|\s+$/g, '').trim();
+  return String(s).replace(/\\"/g, '"').replace(/\\r\\n/g, "\n").replace(/\"/g, '"').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/^\s+|\s+$/g, '');
 }
 
 function getProxyableIRI(url) {
