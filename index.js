@@ -106,7 +106,7 @@ var prefixes = {
   "earl": "https://www.w3.org/ns/earl#"
 }
 
-var prefixRDFa = Object.keys(prefixes).map(function(i){ return i + ': ' + prefixes[i]; }).join(' ');
+var prefixesRDFa = Object.keys(prefixes).map(function(i){ return i + ': ' + prefixes[i]; }).join(' ');
 
 var argv;
 var app = express();
@@ -1691,6 +1691,8 @@ app,
 XMLHttpRequest,
 SimpleRDF,
 vocab,
+prefixes,
+prefixesRDFa,
 RDFstore,
 htmlEntities,
 preSafe,
