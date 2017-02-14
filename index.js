@@ -1067,21 +1067,31 @@ function handleResource(req, res, next, options){
 function postContainer(req, res, next, options){
   var data = req.rawBody;
   var mediaType = contentType.parse(req.headers['content-type']).type;
+  var fileName, file = '';
+
+  var url = req.getUrl();
+  var basePath = getBaseURL(req.requestedPath);
+  var baseURL = getBaseURL(url);
+  var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
+
+  var lastPath = url.substr(url.lastIndexOf('/') + 1);
+  var pathWriteable = false;
 
   if(req.is('application/ld+json')) {
     try { JSON.parse(data) }
-    catch(e) { res.status(400); res.send(); }
+    catch(e) {
+      res.status(400);
+      res.end();
+      if('id' in req.query && req.query.id.length > 0 && typeof options !== 'undefined' && options.allowSlug){
+        fileName = req.query.id;
+        file = basePath + fileName;
+      }
+      storeMeta(req, res, next, Object.assign(options, { "file": file }));
+    }
   }
   if(availableTypes.indexOf(mediaType) > -1) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < config.maxPayloadSize) ? true : false;
-    var url = req.getUrl();
-    var basePath = getBaseURL(req.requestedPath);
-    var baseURL = getBaseURL(url);
-
-    var fileName;
-    var lastPath = url.substr(url.lastIndexOf('/') + 1);
-    var pathWriteable = false;
 
     if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fileExists(basePath + lastPath)) {
       fileName = lastPath;
@@ -1101,52 +1111,70 @@ function postContainer(req, res, next, options){
       pathWriteable = true;
     }
 
-    var file = basePath + fileName;
-    var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
+    file = basePath + fileName;
     var uri = base + fileName;
 
     //XXX: The API does not recommended to use fs.stat before fs.open/readFile/writeFile()
     fs.stat(basePath, function(error, stats) {
+      //FIXME: Why is the earlier file variable not available here???
+      // console.log(base);
+      // console.log(basePath);
+      // console.log(fileName);
+      // console.log(file);
+      // console.log(uri);
+      file = basePath + fileName;
+
       if(error) {
         res.status(404);
         res.end();
+        storeMeta(req, res, next, Object.assign(options, { "file": file }));
         return next();
       }
-//console.log(stats);
 
       if(createRequest) {
         if(stats.isDirectory() && pathWriteable) {
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
-console.log(g);
-                gcDirectory(basePath);
-                //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
-                fs.writeFile(file, data, function(x) {
-// console.log(uri);
-                  res.set('Location', uri);
-                  res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
-                  res.status(201);
-                  res.send();
+// console.log(g);
+                if(g._graph.length > 0) {
+                  gcDirectory(basePath);
+                  //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
+                  fs.writeFile(file, data, function(x) {
+                    // console.log(uri);
+                    res.set('Location', uri);
+                    res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
+                    res.status(201);
+                    res.send();
+                    res.end();
+                    storeMeta(req, res, next, Object.assign(options, { "file": file }));
+                    return;
+                  });
+                }
+                else {
+                  res.status(400);
                   res.end();
-                  storeMeta(req, res, next, Object.assign(options, { storeMetaPath : file + '.json' }));
+                  storeMeta(req, res, next, Object.assign(options, { "file": file }));
                   return;
-                });
+                }
               },
               function(reason) {
                 res.status(400);
                 res.end();
+                storeMeta(req, res, next, Object.assign(options, { "file": file }));
               }
             )
-            .catch(function(Error){
+            .catch(function(error){
 // console.log(error);
               res.status(400);
               res.end();
+              storeMeta(req, res, next, Object.assign(options, { "file": file }));
             });
         }
         else {
           res.status(405);
           res.set('Allow', 'GET, HEAD, OPTIONS');
           res.end();
+          storeMeta(req, res, next, Object.assign(options, { "file": file }));
           return next();
         }
       }
@@ -1164,6 +1192,7 @@ console.log(g);
 
           res.send('Your request is being processed. Check status: ' + location + '\n');
           res.end();
+          storeMeta(req, res, next, Object.assign(options, { "file": file }));
           return;
         });
       }
@@ -1171,25 +1200,29 @@ console.log(g);
   }
   else {
     res.status(415);
+    storeMeta(req, res, next, Object.assign(options, { "file": file }));
     res.end();
   }
 }
 
 function storeMeta(req, res, next, options){
-  if(typeof options !== 'undefined' && 'storeMeta' in options && options.storeMeta && 'storeMetaPath' in options && options.storeMetaPath.length > 0){
+  if(typeof options !== 'undefined' && 'storeMeta' in options && options.storeMeta && 'file' in options && options.file.length > 0){
     // console.log(req)
-    // console.log(res);
+    console.log(res);
     // console.log(JSON.stringify(req.headers));
     // console.log(JSON.stringify(res.headers));
     var data = {
-      req: { headers: req.headers, rawBody: req.rawBody },
-      res: { headers: res.header()._header }
+      req: { statusCode: res.statusCode, headers: req.headers, rawBody: req.rawBody },
+      res: { statusCode: res.statusCode, headers: res.header()._header }
     };
     // console.log(options.storeMetaPath);
 // console.log(res.header()._header);
 // console.log(data);
 // console.log(JSON.stringify(data));
-    fs.writeFile(options.storeMetaPath, JSON.stringify(data));
+    if(res.statusCode >= 400 && res.statusCode < 500) {
+      deleteFile(options.file);
+    }
+    fs.writeFile(options.file + '.json', JSON.stringify(data));
   }
 }
 
@@ -1204,20 +1237,24 @@ function deleteResource(path){
     }
 
     if (stats.isFile()) {
-      if(isWritable(path)){
-        fs.unlink(path, function(error){
-          if (error) {
-            console.log(error);
-          }
-console.log('Delete: ' + path);
-        });
-      }
+      deleteFile(path);
     }
     else {
       res.status(404);
       res.end();
     }
   });
+}
+
+function deleteFile(path){
+  if(isWritable(path)){
+    fs.unlink(path, function(error){
+      if (error) {
+console.log(error);
+      }
+console.log('Delete: ' + path);
+    });
+  }
 }
 
 function gcDirectory(path){
