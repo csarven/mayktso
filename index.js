@@ -1212,8 +1212,18 @@ function storeMeta(req, res, next, options){
     // console.log(JSON.stringify(req.headers));
     // console.log(JSON.stringify(res.headers));
     var data = {
-      req: { statusCode: res.statusCode, headers: req.headers, rawBody: req.rawBody },
-      res: { statusCode: res.statusCode, headers: res.header()._header }
+      req: {
+        httpVersion: req.httpVersion,
+        method: req.method,
+        url: req.url,
+        headers: req.headers,
+        rawHeaders: req.raqHeaders,
+        rawBody: req.rawBody
+      },
+      res: {
+        statusCode: res.statusCode,
+        headers: res.header()._header
+      }
     };
     // console.log(options.storeMetaPath);
 // console.log(res.header()._header);
