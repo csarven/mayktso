@@ -1101,6 +1101,10 @@ function postContainer(req, res, next, options){
       pathWriteable = true;
     }
 
+    var file = basePath + fileName;
+    var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
+    var uri = base + fileName;
+
     //XXX: The API does not recommended to use fs.stat before fs.open/readFile/writeFile()
     fs.stat(basePath, function(error, stats) {
       if(error) {
@@ -1112,10 +1116,6 @@ function postContainer(req, res, next, options){
 
       if(createRequest) {
         if(stats.isDirectory() && pathWriteable) {
-            var file = basePath + fileName;
-            var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
-            var uri = base + fileName;
-
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
                 gcDirectory(basePath);
