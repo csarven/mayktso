@@ -1208,7 +1208,7 @@ function postContainer(req, res, next, options){
 function storeMeta(req, res, next, options){
   if(typeof options !== 'undefined' && 'storeMeta' in options && options.storeMeta && 'file' in options && options.file.length > 0){
     // console.log(req)
-    console.log(res);
+    // console.log(res);
     // console.log(JSON.stringify(req.headers));
     // console.log(JSON.stringify(res.headers));
     var data = {
