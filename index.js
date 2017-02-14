@@ -943,7 +943,7 @@ function handleResource(req, res, next, options){
 
         var respond = function() {
           return new Promise(function(resolve, reject) {
-            if(req.requestedType == 'application/ld+json') {
+            if(req.method == 'OPTIONS' || req.requestedType == 'application/ld+json') {
               return resolve(data);
             }
             else {
