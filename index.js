@@ -1118,6 +1118,7 @@ function postContainer(req, res, next, options){
         if(stats.isDirectory() && pathWriteable) {
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
+console.log(g);
                 gcDirectory(basePath);
                 //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
                 fs.writeFile(file, data, function(x) {
@@ -1133,12 +1134,13 @@ function postContainer(req, res, next, options){
               },
               function(reason) {
                 res.status(400);
-                res.send();
+                res.end();
               }
             )
             .catch(function(Error){
-console.log('---- catch');
-console.log(error);
+// console.log(error);
+              res.status(400);
+              res.end();
             });
         }
         else {
