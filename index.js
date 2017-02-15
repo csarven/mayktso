@@ -160,6 +160,9 @@ function config(configFile){
   config['maxResourceCount'] = config.maxResourceCount || 100;
   config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
 
+  var createDirectories = [config['inboxPath'], config['queuePath'], config['annotationPath'], config['reportsPath']];
+  createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
+
 //console.log(config);
   return config;
 }
