@@ -1104,11 +1104,11 @@ function postContainer(req, res, next, options){
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < config.maxPayloadSize) ? true : false;
 
-    if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fileExists(basePath + lastPath)) {
+    if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fs.existsSync(basePath + lastPath)) {
       fileName = lastPath;
       pathWriteable = true;
     }
-    else if(req.headers['slug'] && req.headers['slug'].length > 0 && !req.headers['slug'].match(/\/?\.\.+\/?/g) && !fileExists(req.requestedPath + req.headers['slug'])) {
+    else if(req.headers['slug'] && req.headers['slug'].length > 0 && !req.headers['slug'].match(/\/?\.\.+\/?/g) && !fs.existsSync(req.requestedPath + req.headers['slug'])) {
       fileName = req.headers['slug'];
       pathWriteable = true;
     }
