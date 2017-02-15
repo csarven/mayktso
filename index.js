@@ -1065,17 +1065,28 @@ function handleResource(req, res, next, options){
 }
 
 function postContainer(req, res, next, options){
+  var pathWriteable = false;
   var data = req.rawBody;
-  var mediaType = contentType.parse(req.headers['content-type']).type;
   var fileName, file = '';
-
   var url = req.getUrl();
   var basePath = getBaseURL(req.requestedPath);
   var baseURL = getBaseURL(url);
   var base = baseURL.endsWith('/') ? baseURL : baseURL + '/';
-
   var lastPath = url.substr(url.lastIndexOf('/') + 1);
-  var pathWriteable = false;
+
+  try {
+    var mediaType = contentType.parse(req.headers['content-type']).type;
+  }
+  catch(error) {
+    res.status(400);
+    res.end();
+    if('id' in req.query && req.query.id.length > 0 && typeof options !== 'undefined' && options.allowSlug){
+      fileName = req.query.id;
+      file = basePath + fileName;
+    }
+    storeMeta(req, res, next, Object.assign(options, { "file": file }));
+  }
+
 
   if(req.is('application/ld+json')) {
     try { JSON.parse(data) }
