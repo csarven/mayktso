@@ -1090,7 +1090,6 @@ function postContainer(req, res, next, options){
     storeMeta(req, res, next, Object.assign(options, { "file": file }));
   }
 
-
   if(req.is('application/ld+json')) {
     try { JSON.parse(data) }
     catch(e) {
@@ -1103,6 +1102,7 @@ function postContainer(req, res, next, options){
       storeMeta(req, res, next, Object.assign(options, { "file": file }));
     }
   }
+
   if(availableTypes.indexOf(mediaType) > -1) {
     var contentLength = Buffer.byteLength(data, 'utf-8');
     var createRequest = (contentLength < config.maxPayloadSize) ? true : false;
@@ -1214,8 +1214,12 @@ function postContainer(req, res, next, options){
   }
   else {
     res.status(415);
-    storeMeta(req, res, next, Object.assign(options, { "file": file }));
     res.end();
+    if('id' in req.query && req.query.id.length > 0 && typeof options !== 'undefined' && options.allowSlug){
+      fileName = req.query.id;
+      file = basePath + fileName;
+    }
+    storeMeta(req, res, next, Object.assign(options, { "file": file }));
   }
 }
 
