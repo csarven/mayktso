@@ -100,7 +100,7 @@ var prefixes = {
   "cito": "http://purl.org/spar/cito/",
   "fabio": "http://purl.org/spar/fabio/",
   "oa": "http://www.w3.org/ns/oa#",
-  "as": "http://www.w3.org/ns/activitystreams#",
+  "as": "https://www.w3.org/ns/activitystreams#",
   "ldp": "http://www.w3.org/ns/ldp#",
   "solid": "http://www.w3.org/ns/solid/terms#",
   "earl": "https://www.w3.org/ns/earl#"
