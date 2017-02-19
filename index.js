@@ -1238,6 +1238,7 @@ function storeMeta(req, res, next, options){
         httpVersion: req.httpVersion,
         method: req.method,
         url: req.url,
+        query: req.query,
         headers: req.headers,
         rawHeaders: req.raqHeaders,
         rawBody: req.rawBody
