@@ -1240,7 +1240,7 @@ function storeMeta(req, res, next, options){
         url: req.url,
         query: req.query,
         headers: req.headers,
-        rawHeaders: req.raqHeaders,
+        rawHeaders: req.rawHeaders,
         rawBody: req.rawBody
       },
       res: {
