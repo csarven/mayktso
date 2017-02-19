@@ -1245,6 +1245,7 @@ function storeMeta(req, res, next, options){
       },
       res: {
         statusCode: res.statusCode,
+        statusMessage: res.statusMessage,
         headers: res.header()._header
       }
     };
