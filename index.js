@@ -1034,7 +1034,7 @@ function handleResource(req, res, next, options){
             res.set('ETag', etag(data));
             res.set('Last-Modified', stats.mtime);
             res.set('Vary', 'Origin');
-            res.set('Accept-Post', 'application/ld+json, text/turtle');
+            res.set('Accept-Post', 'text/html, application/xhtml+xml, application/ld+json, text/turtle');
             res.set('Allow', 'GET, HEAD, OPTIONS, POST');
 
             switch(req.method) {
