@@ -104,7 +104,8 @@ var prefixes = {
   "as": "https://www.w3.org/ns/activitystreams#",
   "ldp": "http://www.w3.org/ns/ldp#",
   "solid": "http://www.w3.org/ns/solid/terms#",
-  "earl": "http://www.w3.org/ns/earl#"
+  "earl": "http://www.w3.org/ns/earl#",
+  "ldn": "https://www.w3.org/TR/ldn/#"
 }
 
 var prefixesRDFa = Object.keys(prefixes).map(function(i){ return i + ': ' + prefixes[i]; }).join(' ');
