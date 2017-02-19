@@ -1072,6 +1072,8 @@ function handleResource(req, res, next, options){
 }
 
 function postContainer(req, res, next, options){
+  options = options || {};
+  options['fileNameSuffix'] = options['fileNameSuffix'] || '';
   var pathWriteable = false;
   var data = req.rawBody;
   var fileName, file = '';
@@ -1089,7 +1091,7 @@ function postContainer(req, res, next, options){
     res.end();
     if('id' in req.query && req.query.id.length > 0 && typeof options !== 'undefined' && options.allowSlug){
       fileName = req.query.id;
-      file = basePath + fileName;
+      file = basePath + fileName + options.fileNameSuffix;
     }
     storeMeta(req, res, next, Object.assign(options, { "file": file }));
   }
@@ -1101,7 +1103,7 @@ function postContainer(req, res, next, options){
       res.end();
       if('id' in req.query && req.query.id.length > 0 && typeof options !== 'undefined' && options.allowSlug){
         fileName = req.query.id;
-        file = basePath + fileName;
+        file = basePath + fileName + options.fileNameSuffix;
       }
       storeMeta(req, res, next, Object.assign(options, { "file": file }));
     }
@@ -1129,8 +1131,8 @@ function postContainer(req, res, next, options){
       pathWriteable = true;
     }
 
-    file = basePath + fileName;
-    var uri = base + fileName;
+    file = basePath + fileName + options.fileNameSuffix;
+    var uri = base + fileName + options.fileNameSuffix;
 
     //XXX: The API does not recommended to use fs.stat before fs.open/readFile/writeFile()
     fs.stat(basePath, function(error, stats) {
@@ -1140,7 +1142,7 @@ function postContainer(req, res, next, options){
       // console.log(fileName);
       // console.log(file);
       // console.log(uri);
-      file = basePath + fileName;
+      file = basePath + fileName + options.fileNameSuffix;
 
       if(error) {
         res.status(404);
@@ -1197,7 +1199,7 @@ function postContainer(req, res, next, options){
         }
       }
       else {
-        var file = config.rootPath + '/' + config.queuePath + fileName;
+        var file = config.rootPath + '/' + config.queuePath + fileName + options.fileNameSuffix;
 // console.log(file);
 
         gcDirectory(config.rootPath + '/' + config.queuePath);
@@ -1221,7 +1223,7 @@ function postContainer(req, res, next, options){
     res.end();
     if('id' in req.query && req.query.id.length > 0 && typeof options !== 'undefined' && options.allowSlug){
       fileName = req.query.id;
-      file = basePath + fileName;
+      file = basePath + fileName + options.fileNameSuffix;
     }
     storeMeta(req, res, next, Object.assign(options, { "file": file }));
   }
@@ -1253,6 +1255,7 @@ function storeMeta(req, res, next, options){
 // console.log(res.header()._header);
 // console.log(data);
 // console.log(JSON.stringify(data));
+
     if(res.statusCode >= 400 && res.statusCode < 500) {
       deleteFile(options.file);
     }
