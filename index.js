@@ -675,6 +675,7 @@ function getTarget(req, res, next){
       if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
         res.status(304);
         res.end();
+        return next();
       }
 
       var fromContentType = 'text/html';
@@ -844,6 +845,7 @@ function handleResource(req, res, next, options){
           if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
             res.status(304);
             res.end();
+            return next();
           }
 
           if(req.requestedPath.startsWith(config.rootPath + '/' + config.queuePath)) {
