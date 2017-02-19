@@ -80,6 +80,7 @@ var prefixes = {
   "prov": "http://www.w3.org/ns/prov#",
   "qb": "http://purl.org/linked-data/cube#",
   "schema": "https://schema.org/",
+  "void": "http://rdfs.org/ns/void#",
   "rsa": "http://www.w3.org/ns/auth/rsa#",
   "cert": "http://www.w3.org/ns/auth/cert#",
   "cal": "http://www.w3.org/2002/12/cal/ical#",
