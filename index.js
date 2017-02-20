@@ -1073,7 +1073,7 @@ function handleResource(req, res, next, options){
 
 function postContainer(req, res, next, options){
   options = options || {};
-  options['fileNameSuffix'] = encodeURIComponent(options['fileNameSuffix']) || '';
+  options['fileNameSuffix'] = ('fileNameSuffix' in options) ? encodeURIComponent(options['fileNameSuffix']) : '';
   var pathWriteable = false;
   var data = req.rawBody;
   var fileName, file = '';
