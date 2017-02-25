@@ -1231,10 +1231,8 @@ function postContainer(req, res, next, options){
 
 function storeMeta(req, res, next, options){
   if(typeof options !== 'undefined' && 'storeMeta' in options && options.storeMeta && 'file' in options && options.file.length > 0){
-    // console.log(req)
-    // console.log(res);
-    // console.log(JSON.stringify(req.headers));
-    // console.log(JSON.stringify(res.headers));
+// console.log(req)
+// console.log(res);
     var data = {
       req: {
         httpVersion: req.httpVersion,
@@ -1248,11 +1246,12 @@ function storeMeta(req, res, next, options){
       res: {
         statusCode: res.statusCode,
         statusMessage: res.statusMessage,
-        headers: res.header()._header
+        rawHeaders: res.header()._header,
+        header: res.header()._headers
       }
     };
-    // console.log(options.storeMetaPath);
 // console.log(res.header()._header);
+// console.log(res.header()._headers);
 // console.log(data);
 // console.log(JSON.stringify(data));
 
