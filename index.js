@@ -1246,10 +1246,11 @@ function storeMeta(req, res, next, options){
       res: {
         statusCode: res.statusCode,
         statusMessage: res.statusMessage,
-        rawHeaders: res.header()._header,
-        header: res.header()._headers
+        headers: res.header()._headers,
+        rawHeaders: res.header()._header
       }
     };
+// console.log(res.header());
 // console.log(res.header()._header);
 // console.log(res.header()._headers);
 // console.log(data);
