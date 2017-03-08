@@ -5,10 +5,10 @@ Encounters at an endpoint.
 * Preliminary HTTP server and command-line RDF tool to get/send, serialise data.
 * Server can receive HTTP `HEAD`, `OPTIONS`, `GET`, `POST`, `PUT` requests.
 Content negotiation with `text/turtle`, `application/ld+json`, `text/html`,
-`application/xhtml+xml`
+`application/xhtml+xml`. Serializes from HTML+RDFa, but does not serialize to
+HTML+RDFa.
 * Conforming
 [Linked Data Notifications](https://www.w3.org/TR/ldn/) sender, receiver, sender.
-TODO: Serialisation to HTML+RDFa
 * The server speaks a little bit of LDP. It doesn't do
 authenication/authorisation yet.
 
