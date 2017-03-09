@@ -1094,6 +1094,7 @@ function postContainer(req, res, next, options){
       file = basePath + fileName + options.fileNameSuffix;
     }
     storeMeta(req, res, next, Object.assign(options, { "file": file }));
+    return;
   }
 
   if(req.is('application/ld+json')) {
@@ -1106,11 +1107,25 @@ function postContainer(req, res, next, options){
         file = basePath + fileName + options.fileNameSuffix;
       }
       storeMeta(req, res, next, Object.assign(options, { "file": file }));
+      return;
     }
   }
 
   if(availableTypes.indexOf(mediaType) > -1) {
-    var contentLength = Buffer.byteLength(data, 'utf-8');
+    try {
+      var contentLength = Buffer.byteLength(data, 'utf-8');
+    }
+    catch(e) {
+      res.status(400);
+      res.end();
+      if('id' in req.query && req.query.id.length > 0 && typeof options !== 'undefined' && options.allowSlug){
+        fileName = req.query.id;
+        file = basePath + fileName + options.fileNameSuffix;
+      }
+      storeMeta(req, res, next, Object.assign(options, { "file": file }));
+      return;
+    }
+
     var createRequest = (contentLength < config.maxPayloadSize) ? true : false;
 
     if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fs.existsSync(basePath + lastPath)) {
@@ -1181,6 +1196,7 @@ function postContainer(req, res, next, options){
                 res.status(400);
                 res.end();
                 storeMeta(req, res, next, Object.assign(options, { "file": file }));
+                return;
               }
             )
             .catch(function(error){
@@ -1188,6 +1204,7 @@ function postContainer(req, res, next, options){
               res.status(400);
               res.end();
               storeMeta(req, res, next, Object.assign(options, { "file": file }));
+              return;
             });
         }
         else {
@@ -1195,7 +1212,7 @@ function postContainer(req, res, next, options){
           res.set('Allow', 'GET, HEAD, OPTIONS');
           res.end();
           storeMeta(req, res, next, Object.assign(options, { "file": file }));
-          return next();
+          return;
         }
       }
       else {
