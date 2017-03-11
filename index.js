@@ -660,8 +660,7 @@ function getTarget(req, res, next){
   }
 
   if(!req.requestedType && !req.accepts(['text/html'])) {
-    res.status(406);
-    res.end();
+    resStatus(res, 406);
     return next();
   }
 
@@ -817,8 +816,7 @@ function handleResource(req, res, next, options){
   }
 
   if(!req.requestedType){
-    res.status(406);
-    res.end();
+    resStatus(res, 406);
     return next();
   }
 
@@ -874,8 +872,7 @@ function handleResource(req, res, next, options){
                 if(serializations
                     .map(function(e){return e.result;})
                     .indexOf('pass') < 0){
-                  res.status(406);
-                  res.end();
+                  resStatus(res, 406);
                   return next();
                 }
                 else {
@@ -891,8 +888,7 @@ function handleResource(req, res, next, options){
                           outputData = data;
                         }
                         else {
-                          res.status(406);
-                          res.end();
+                          resStatus(res, 406);
                           return next();
                         }
                       }
@@ -1056,12 +1052,12 @@ function handleResource(req, res, next, options){
           },
           function(reason){
             if('toContentType' in reason && reason.toContentType == 'text/html'){
-              res.status(406);
+              resStatus(res, 406);
             }
             else {
               res.status(500);
+              res.end();
             }
-            res.end();
             return next();
           }
         );
