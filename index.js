@@ -1773,6 +1773,18 @@ function getInboxNotifications(data, options) {
   );
 }
 
+function resStatus(res, status, data){
+  switch(status){
+    default:
+      break;
+    case 406:
+      data = data || '406 Not Acceptable https://tools.ietf.org/html/rfc7231#section-6.5.6';
+      break;
+  }
+  res.send(data);
+  res.end();
+}
+
 //TODO: clean this up
 module.exports = {
 express,
@@ -1805,5 +1817,6 @@ serializeData,
 getBaseURL,
 getExternalBaseURL,
 handleResource,
-getSerialization
+getSerialization,
+resStatus,
 }
