@@ -1773,15 +1773,18 @@ function getInboxNotifications(data, options) {
   );
 }
 
-function resStatus(res, status, data){
+function resStatus(res, status){
+  res.status(status);
   switch(status){
     default:
       break;
     case 406:
-      data = data || '406 Not Acceptable https://tools.ietf.org/html/rfc7231#section-6.5.6';
+      var data = '406 Not Acceptable https://tools.ietf.org/html/rfc7231#section-6.5.6';
       break;
   }
-  res.send(data);
+  if (typeof data !== 'undefined'){
+    res.send(data);
+  }
   res.end();
 }
 
