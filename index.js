@@ -1775,7 +1775,7 @@ function resStatus(res, status){
     default:
       break;
     case 406:
-      var data = '406 Not Acceptable https://tools.ietf.org/html/rfc7231#section-6.5.6';
+      var data = "HTTP 406: Accept type not acceptable. See also https://tools.ietf.org/html/rfc7231#section-6.5.6\n";
       break;
   }
   if (typeof data !== 'undefined'){
