@@ -1145,6 +1145,10 @@ function postContainer(req, res, next, options){
     file = basePath + fileName + options.fileNameSuffix;
     var uri = base + fileName + options.fileNameSuffix;
 
+    if(!isWritable(file)){
+      pathWriteable = false;
+    }
+
     //XXX: The API does not recommended to use fs.stat before fs.open/readFile/writeFile()
     fs.stat(basePath, function(error, stats) {
       //FIXME: Why is the earlier file variable not available here???
