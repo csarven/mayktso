@@ -3,3 +3,4 @@ node_modules/
 # project specifics
 build.js
 config.json
+www/

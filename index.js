@@ -152,17 +152,23 @@ function config(configFile){
   config['port'] = config.port || 3000;
   config['scheme'] = (config.sslKey && config.sslCert) ? 'https' : 'http';
   config['authority'] = config.scheme + '://' + config.hostname + ':' + config.port;
-  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() : '.');
+  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() : 'www/');
   config['basePath'] = config.basePath || '';
-  config['inboxPath'] = config.inboxPath || 'inbox/';
-  config['queuePath'] = config.queuePath || 'queue/';
-  config['annotationPath'] = config.annotationPath || 'annotation/';
-  config['reportsPath'] = config.reportsPath || 'reports/';
+
+  // pre-provided resource endpoints
+  config['annotationPath'] = config.annotationPath || config['rootPath'] + 'annotation/';
+  config['inboxPath'] = config.inboxPath || config['rootPath'] + 'inbox/';
+  config['queuePath'] = config.queuePath || config['rootPath'] + 'queue/';
+  config['reportsPath'] = config.reportsPath || config['rootPath'] + 'reports/';
+
   config['maxPayloadSize'] = config.maxPayloadSize || 100000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
   config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
 
-  var createDirectories = [config['inboxPath'], config['queuePath'], config['annotationPath'], config['reportsPath']];
+  var createDirectories = [
+    config['rootPath'], config['annotationPath'], config['inboxPath'],
+    config['queuePath'], config['reportsPath']
+  ];
   createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
 
 //console.log(config);
