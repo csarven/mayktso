@@ -13,6 +13,9 @@ var RdfaParser = require('rdf-parser-rdfa')
 var RdfXmlParser = require('rdf-parser-rdfxml')
 var SimpleRDFParse = require('simplerdf-parse')
 
+// local requires
+var getSerialization = require('./src/utils.js').getSerialization;
+
 var formats = {parsers: {}}
 formats.parsers['application/ld+json'] = JsonLdParser
 formats.parsers['text/turtle'] = N3Parser
@@ -773,56 +776,6 @@ function getTarget(req, res, next){
     });
   });
 }
-
-function getSerialization(data, fromContentType, toContentType, serializeOptions, requestedType) {
-// console.log('- - -' + fromContentType + ' ' + toContentType + ' ' + requestedType)
-  if(fromContentType == 'application/ld+json'){
-    try { JSON.parse(data) }
-    catch(error) {
-      return Promise.resolve({
-        'fromContentType': fromContentType,
-        'toContentType': toContentType,
-        'result': 'fail',
-        'data': error });
-    }
-  }
-
-  return serializeData(data, fromContentType, toContentType, serializeOptions).then(
-    function(transformedData){
-      var outputData = (fromContentType == toContentType) ? data : transformedData;
-// console.log(outputData);
-
-      if(requestedType){
-        if(requestedType == toContentType || rdfaTypes.indexOf(requestedType) > -1) {
-          return {
-            'fromContentType': fromContentType,
-            'toContentType': toContentType,
-            'result': 'pass',
-            'data': outputData };
-        }
-        else {
-// console.log('     ' + fromContentType + ' ' + toContentType + ' ' + requestedType)
-          return getSerialization(data, fromContentType, requestedType, serializeOptions, requestedType);
-        }
-      }
-      else {
-        return {
-          'fromContentType': fromContentType,
-          'toContentType': toContentType,
-          'result': 'pass',
-          'data': outputData };
-      }
-    },
-    function(error){
-      // console.log(error);
-      return Promise.resolve({
-        'fromContentType': fromContentType,
-        'toContentType': toContentType,
-        'result': 'fail',
-        'data': error });
-    });
-}
-
 
 function handleResource(req, res, next, options){
   options = options || {};
