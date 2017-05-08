@@ -1500,10 +1500,6 @@ function decodeString(string) {
   return decodeURIComponent(string.replace(/\+/g,  " "));
 }
 
-function htmlEntities(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
 function preSafe(s) {
   return String(s).replace(/\\"/g, '"').replace(/\\r\\n/g, "\n").replace(/\"/g, '"').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/^\s+|\s+$/g, '');
 }
@@ -1817,14 +1813,12 @@ getConfigFile,
 config,
 init,
 app,
-
 XMLHttpRequest,
 SimpleRDF,
 vocab,
 prefixes,
 prefixesRDFa,
 RDFstore,
-htmlEntities,
 preSafe,
 discoverInbox,
 getInboxNotifications,
