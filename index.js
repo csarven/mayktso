@@ -43,9 +43,6 @@ var minimist = require('minimist');
 // var extname = path.extname;
 var etag = require('etag');
 var uuid = require('node-uuid');
-var express = require('express');
-var https = require('https');
-var http = require('http');
 var XMLHttpRequest = require('xhr2');
 //var accepts = require('accepts');
 var contentType = require('content-type');
@@ -114,9 +111,6 @@ var prefixes = {
 var prefixesRDFa = Object.keys(prefixes).map(function(i){ return i + ': ' + prefixes[i]; }).join(' ');
 
 var argv;
-var app = express();
-
-// app.use(compress());
 
 if(!module.parent) {
   init();
@@ -197,20 +191,6 @@ function config(configFile){
   return config;
 }
 
-function createServer(config){
-  if (config.sslKey && config.sslCert) {
-    var options = {
-      key: fs.readFileSync(config.sslKey),
-      cert: fs.readFileSync(config.sslCert),
-      requestCert: false
-    };
-    https.createServer(options, app).listen(config.port);
-  }
-  else {
-    http.createServer(app).listen(config.port);
-  }
-}
-
 function init(options){
   argv = minimist(process.argv.slice(2));
 
@@ -221,7 +201,7 @@ function init(options){
     config = (options && options.config) ? options.config : config();
 console.log(config);
 
-    createServer(config);
+    var app = require('./src/server.js').createServer(config);
 
     app.use(function(req, res, next) {
       res.header('X-Powered-By', mayktsoURI);
@@ -1761,11 +1741,9 @@ function resStatus(res, status){
 
 //TODO: clean this up
 module.exports = {
-express,
 getConfigFile,
 config,
 init,
-app,
 XMLHttpRequest,
 SimpleRDF,
 vocab,
