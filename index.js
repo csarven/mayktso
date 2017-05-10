@@ -171,6 +171,14 @@ function config(configFile){
   ];
   createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
 
+  // rootPath folder does not contain an index.html file...so we'll copy the
+  // default one in.
+  if (!fs.existsSync(config.rootPath + 'index.html')
+      && fs.existsSync(process.cwd() + '/index.html')) {
+    fs.createReadStream(process.cwd() + '/index.html')
+      .pipe(fs.createWriteStream(config.rootPath + 'index.html'));
+  }
+
 //console.log(config);
   return config;
 }
