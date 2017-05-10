@@ -9,6 +9,8 @@ exports.createServer = function(config){
   var app = express();
   // app.use(compress());
 
+  app.use(require('./cors-headers.js'));
+
   if (config.sslKey && config.sslCert) {
     var options = {
       key: fs.readFileSync(config.sslKey),
