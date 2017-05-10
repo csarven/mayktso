@@ -48,6 +48,9 @@ var XMLHttpRequest = require('xhr2');
 var contentType = require('content-type');
 var bodyParser = require('body-parser');
 
+// local requires
+var createServer = require('./src/server/index.js').createServer;
+
 var availableTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
 var rdfaTypes = ['application/xhtml+xml', 'text/html'];
 var mayktsoURI = 'https://github.com/csarven/mayktso';
@@ -201,7 +204,7 @@ function init(options){
     config = (options && options.config) ? options.config : config();
 console.log(config);
 
-    var app = require('./src/server.js').createServer(config);
+    var app = createServer(config);
 
     app.use(function(req, res, next) {
       res.header('X-Powered-By', mayktsoURI);
