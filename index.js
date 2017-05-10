@@ -276,7 +276,8 @@ console.log(config);
     app.use(function(req, res, next) {
 //      module.exports.accept = accept = accepts(req);
       req.requestedType = req.accepts(availableTypes);
-      req.requestedPath = config.rootPath + req.originalUrl;
+      // remove initial `/` from `originalUrl since `rootPath` has one
+      req.requestedPath = config.rootPath + req.originalUrl.substr(1);
       // console.log(req);
       // console.log(res);
 
