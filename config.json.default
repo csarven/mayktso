@@ -6,10 +6,10 @@
   "rootPath": "www/",
   "basePath": "",
 
-  "annotationPath": "www/annotation/",
-  "inboxPath": "www/inbox/",
-  "queuePath": "www/queue/",
-  "reportsPath": "www/reports/",
+  "annotationPath": "annotation/",
+  "inboxPath": "inbox/",
+  "queuePath": "queue/",
+  "reportsPath": "reports/",
 
   "maxPayloadSize": 10000,
   "maxResourceCount": 10

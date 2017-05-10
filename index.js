@@ -156,20 +156,31 @@ function config(configFile){
   config['basePath'] = config.basePath || '';
 
   // pre-provided resource endpoints
-  config['annotationPath'] = config.annotationPath || config['rootPath'] + 'annotation/';
-  config['inboxPath'] = config.inboxPath || config['rootPath'] + 'inbox/';
-  config['queuePath'] = config.queuePath || config['rootPath'] + 'queue/';
-  config['reportsPath'] = config.reportsPath || config['rootPath'] + 'reports/';
+  config['annotationPath'] = config.annotationPath || 'annotation/';
+  config['inboxPath'] = config.inboxPath || 'inbox/';
+  config['queuePath'] = config.queuePath || 'queue/';
+  config['reportsPath'] = config.reportsPath || 'reports/';
 
   config['maxPayloadSize'] = config.maxPayloadSize || 100000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
   config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
 
-  var createDirectories = [
-    config['rootPath'], config['annotationPath'], config['inboxPath'],
-    config['queuePath'], config['reportsPath']
+  function createDir(path) {
+    if (!fs.existsSync(path)) {
+      fs.mkdirSync(path);
+    }
+  }
+
+  // create the `rootPath` directory
+  createDir(config['rootPath']);
+  // ...all others are relative to `rootPath`
+  var createThese = [
+    config['annotationPath'], config['inboxPath'], config['queuePath'],
+    config['reportsPath']
   ];
-  createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
+  createThese.forEach(function(path) {
+    createDir(config['rootPath'] + path);
+  });
 
   // rootPath folder does not contain an index.html file...so we'll copy the
   // default one in.
