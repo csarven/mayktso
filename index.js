@@ -144,6 +144,12 @@ function getConfigFile(configFile){
   return config;
 }
 
+function createDir(path) {
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path);
+  }
+}
+
 function config(configFile){
   var config = getConfigFile(configFile);
 
@@ -164,12 +170,6 @@ function config(configFile){
   config['maxPayloadSize'] = config.maxPayloadSize || 100000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
   config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
-
-  function createDir(path) {
-    if (!fs.existsSync(path)) {
-      fs.mkdirSync(path);
-    }
-  }
 
   // create the `rootPath` directory
   createDir(config['rootPath']);
