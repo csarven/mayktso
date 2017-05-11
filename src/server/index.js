@@ -10,6 +10,7 @@ exports.createServer = function(config){
   // app.use(compress());
 
   app.use(require('./middleware/cors-headers.js'));
+  app.use(require('./middleware/log-request-console.js'));
 
   if (config.sslKey && config.sslCert) {
     var options = {

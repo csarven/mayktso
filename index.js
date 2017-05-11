@@ -234,21 +234,6 @@ console.log(config);
     });
 
     app.enable('trust proxy');
-    app.use(function(req, res, next){
-      require('console-stamp')(console, {
-        pattern: "yyyy-mm-dd HH:MM:ss.l",
-        metadata: function () {
-          return (req.method + ' ' + req.getUrl() + ' ' + req.ips + '');
-        },
-        colors: {
-          stamp: "yellow",
-          label: "white",
-          metadata: "green"
-        }
-      });
-      return next();
-    });
-
     app.use(function(req, res, next) {
 //      module.exports.accept = accept = accepts(req);
       req.requestedType = req.accepts(availableTypes);
