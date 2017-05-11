@@ -152,7 +152,7 @@ function config(configFile){
   config['port'] = config.port || 3000;
   config['scheme'] = (config.sslKey && config.sslCert) ? 'https' : 'http';
   config['authority'] = config.scheme + '://' + config.hostname + ':' + config.port;
-  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() : 'www/');
+  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() + '/www/' : 'www/');
   config['basePath'] = config.basePath || '';
 
   // pre-provided resource endpoints
