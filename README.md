@@ -152,3 +152,20 @@ mechanisms
 mayktso as a receiver for your Inbox)
 * Motived by [node-solid-server](https://github.com/solid/node-solid-server)
 * Compliments [dokieli](https://github.com/linkeddata/dokieli)
+
+## Contributors
+* [Sarven Capadisli](https://github.com/csarven)
+* [Amy Guy](https://github.com/rhiaro)
+* [Benjamin Young](https://github.com/BigBlueHat)
+* [Ruben Taelman](https://github.com/rubensworks)
+* Your name here. See below :)
+
+## Acknowledgements
+* [Dmitri Zagidulin](https://github.com/dmitrizagidulin)
+
+## How to contribute
+* Use it! Break things.
+* Report [issues](https://github.com/csarven/mayktso/issues/) and document.
+* Fix issues.
+* Request new features.
+* .. and however else you want to contribute.
