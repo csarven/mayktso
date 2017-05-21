@@ -87,7 +87,7 @@ mayktso: https://github.com/csarven/mayktso
 ```
 
 ```shell
-$ node index.js --discoveryInbox http://localhost:3000/ --accept \
+$ node index.js --discoverInbox http://localhost:3000/ --accept \
 application/ld+json
 $ node index.js --getNotifications http://localhost:3000/inbox/abc --accept \
 application/ld+json
