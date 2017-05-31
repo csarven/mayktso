@@ -13,6 +13,13 @@ var RdfaParser = require('rdf-parser-rdfa')
 var RdfXmlParser = require('rdf-parser-rdfxml')
 var SimpleRDFParse = require('simplerdf-parse')
 
+// local requires
+const { getGraph, getGraphFromData, resStatus, serializeData } = require('./src/utils.js');
+
+var handleResource = require('./src/server/middleware/handle-resource.js');
+
+var app;
+
 var formats = {parsers: {}}
 formats.parsers['application/ld+json'] = JsonLdParser
 formats.parsers['text/turtle'] = N3Parser
@@ -40,16 +47,15 @@ var minimist = require('minimist');
 // var extname = path.extname;
 var etag = require('etag');
 var uuid = require('node-uuid');
-var express = require('express');
-var https = require('https');
-var http = require('http');
 var XMLHttpRequest = require('xhr2');
 //var accepts = require('accepts');
 var contentType = require('content-type');
 var bodyParser = require('body-parser');
 
+// local requires
+var createServer = require('./src/server/index.js').createServer;
+
 var availableTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
-var rdfaTypes = ['application/xhtml+xml', 'text/html'];
 var mayktsoURI = 'https://github.com/csarven/mayktso';
 
 var vocab = {
@@ -111,9 +117,6 @@ var prefixes = {
 var prefixesRDFa = Object.keys(prefixes).map(function(i){ return i + ': ' + prefixes[i]; }).join(' ');
 
 var argv;
-var app = express();
-
-// app.use(compress());
 
 if(!module.parent) {
   init();
@@ -144,6 +147,12 @@ function getConfigFile(configFile){
   return config;
 }
 
+function createDir(path) {
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path);
+  }
+}
+
 function config(configFile){
   var config = getConfigFile(configFile);
 
@@ -152,35 +161,40 @@ function config(configFile){
   config['port'] = config.port || 3000;
   config['scheme'] = (config.sslKey && config.sslCert) ? 'https' : 'http';
   config['authority'] = config.scheme + '://' + config.hostname + ':' + config.port;
-  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() : '.');
+  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() + '/www/' : 'www/');
   config['basePath'] = config.basePath || '';
+
+  // pre-provided resource endpoints
+  config['annotationPath'] = config.annotationPath || 'annotation/';
   config['inboxPath'] = config.inboxPath || 'inbox/';
   config['queuePath'] = config.queuePath || 'queue/';
-  config['annotationPath'] = config.annotationPath || 'annotation/';
   config['reportsPath'] = config.reportsPath || 'reports/';
+
   config['maxPayloadSize'] = config.maxPayloadSize || 100000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
   config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
 
-  var createDirectories = [config['inboxPath'], config['queuePath'], config['annotationPath'], config['reportsPath']];
-  createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
+  // create the `rootPath` directory
+  createDir(config['rootPath']);
+  // ...all others are relative to `rootPath`
+  var createThese = [
+    config['annotationPath'], config['inboxPath'], config['queuePath'],
+    config['reportsPath']
+  ];
+  createThese.forEach(function(path) {
+    createDir(config['rootPath'] + path);
+  });
+
+  // rootPath folder does not contain an index.html file...so we'll copy the
+  // default one in.
+  if (!fs.existsSync(config.rootPath + 'index.html')
+      && fs.existsSync(process.cwd() + '/index.html')) {
+    fs.createReadStream(process.cwd() + '/index.html')
+      .pipe(fs.createWriteStream(config.rootPath + 'index.html'));
+  }
 
 //console.log(config);
   return config;
-}
-
-function createServer(config){
-  if (config.sslKey && config.sslCert) {
-    var options = {
-      key: fs.readFileSync(config.sslKey),
-      cert: fs.readFileSync(config.sslCert),
-      requestCert: false
-    };
-    https.createServer(options, app).listen(config.port);
-  }
-  else {
-    http.createServer(app).listen(config.port);
-  }
 }
 
 function init(options){
@@ -193,20 +207,11 @@ function init(options){
     config = (options && options.config) ? options.config : config();
 console.log(config);
 
-    createServer(config);
+    // app is a global...also exported for using mayktso as an expres()
+    app = createServer(config);
 
     app.use(function(req, res, next) {
       res.header('X-Powered-By', mayktsoURI);
-      res.header("Access-Control-Allow-Credentials", "true");
-      res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS, POST, PUT");
-      if(req.header('Origin')) {
-        res.header("Access-Control-Allow-Origin", req.header('Origin'));
-      }
-      else {
-        res.header("Access-Control-Allow-Origin", "*");
-      }
-      res.header("Access-Control-Allow-Headers", "Content-Length, Content-Type, If-None-Match, Link, Location, Origin, Slug, X-Requested-With");
-       res.header("Access-Control-Expose-Headers", "Accept-Post, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin, Allow, Content-Length, Content-Type, ETag, Last-Modified, Link, Location, Updates-Via, Vary");
       return next();
     });
 
@@ -233,25 +238,11 @@ console.log(config);
     });
 
     app.enable('trust proxy');
-    app.use(function(req, res, next){
-      require('console-stamp')(console, {
-        pattern: "yyyy-mm-dd HH:MM:ss.l",
-        metadata: function () {
-          return (req.method + ' ' + req.getUrl() + ' ' + req.ips + '');
-        },
-        colors: {
-          stamp: "yellow",
-          label: "white",
-          metadata: "green"
-        }
-      });
-      return next();
-    });
-
     app.use(function(req, res, next) {
 //      module.exports.accept = accept = accepts(req);
       req.requestedType = req.accepts(availableTypes);
-      req.requestedPath = config.rootPath + req.originalUrl;
+      // remove initial `/` from `originalUrl since `rootPath` has one
+      req.requestedPath = config.rootPath + req.originalUrl.substr(1);
       // console.log(req);
       // console.log(res);
 
@@ -274,9 +265,14 @@ console.log(config);
     var handleRoutes = new RegExp('^(?!/index.html' + oR + ').*$');
 
     app.route(/^\/(index.html)?$/).all(getTarget);
-    app.route(handleRoutes).all(function(req, res, next){
-      handleResource(req, res, next, { jsonld: { profile: 'http://www.w3.org/ns/json-ld#expanded' }});
-    });
+    app
+      .route(handleRoutes)
+      .all(handleResource(config, {
+        jsonld: {
+          profile: 'http://www.w3.org/ns/json-ld#expanded'
+        },
+        availableTypes: availableTypes
+      }));
 
     console.log('process.cwd(): ' + process.cwd());
     console.log('rootPath: ' + config.rootPath);
@@ -748,325 +744,6 @@ function getTarget(req, res, next){
   });
 }
 
-function getSerialization(data, fromContentType, toContentType, serializeOptions, requestedType) {
-// console.log('- - -' + fromContentType + ' ' + toContentType + ' ' + requestedType)
-  if(fromContentType == 'application/ld+json'){
-    try { JSON.parse(data) }
-    catch(error) {
-      return Promise.resolve({
-        'fromContentType': fromContentType,
-        'toContentType': toContentType,
-        'result': 'fail',
-        'data': error });
-    }
-  }
-
-  return serializeData(data, fromContentType, toContentType, serializeOptions).then(
-    function(transformedData){
-      var outputData = (fromContentType == toContentType) ? data : transformedData;
-// console.log(outputData);
-
-      if(requestedType){
-        if(requestedType == toContentType || rdfaTypes.indexOf(requestedType) > -1) {
-          return {
-            'fromContentType': fromContentType,
-            'toContentType': toContentType,
-            'result': 'pass',
-            'data': outputData };
-        }
-        else {
-// console.log('     ' + fromContentType + ' ' + toContentType + ' ' + requestedType)
-          return getSerialization(data, fromContentType, requestedType, serializeOptions, requestedType);
-        }
-      }
-      else {
-        return {
-          'fromContentType': fromContentType,
-          'toContentType': toContentType,
-          'result': 'pass',
-          'data': outputData };
-      }
-    },
-    function(error){
-      // console.log(error);
-      return Promise.resolve({
-        'fromContentType': fromContentType,
-        'toContentType': toContentType,
-        'result': 'fail',
-        'data': error });
-    });
-}
-
-
-function handleResource(req, res, next, options){
-  options = options || {};
-
-  switch(req.method){
-    case 'GET': case 'HEAD': case 'OPTIONS':
-      break;
-    case 'POST': case 'PUT':
-      return postContainer(req, res, next, options);
-      break;
-    default:
-      res.status(405);
-      res.set('Allow', 'GET, HEAD, OPTIONS');
-      res.end();
-      return next();
-      break;
-  }
-
-  if(!req.requestedType){
-    resStatus(res, 406);
-    return next();
-  }
-
-  fs.stat(req.requestedPath, function(error, stats) {
-    if (error) {
-      if(req.method == 'OPTIONS'){
-        res.set('Content-Type', 'text/plain');
-        res.set('Content-Length', '0');
-        res.set('Vary', 'Origin');
-        res.set('Allow', 'GET, HEAD, OPTIONS, PUT, POST');
-        res.status(204);
-        res.end();
-      }
-      else {
-        res.status(404);
-      }
-      return next();
-    }
-
-    if (stats.isFile()) {
-      var isReadable = stats.mode & 4 ? true : false;
-      if (isReadable) {
-        fs.readFile(req.requestedPath, 'utf8', function(error, data){
-          if (error) { console.log(error); }
-
-          if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
-            res.status(304);
-            res.end();
-            return next();
-          }
-
-          if(req.requestedPath.startsWith(config.rootPath + '/' + config.queuePath)) {
-            res.status(200);
-            res.send(data);
-            res.end();
-            deleteResource(req.requestedPath);
-          }
-
-          var toContentType = req.requestedType;
-          var serializeOptions = { 'subjectURI': req.getUrl() };
-
-          var doSerializations = function(data, serializeOptions){
-            var checkSerializations = [];
-            availableTypes.forEach(function(fromContentType){
-              //XXX: toContentType is application/ld+json because we need to see what is serializable since text/html doesn't have a serializer yet. This is not great because we have to rerun the getSerialization in some cases eg resource is Turtle, fromContentType is text/turtle, toContentType is application/ld+json gives a success but the request is text/turtle so we reuse the requestedType in place of toContentType in the second time around.
-              checkSerializations.push(getSerialization(data, fromContentType, 'application/ld+json', serializeOptions, req.requestedType));
-            });
-
-            return Promise.all(checkSerializations)
-              .then((serializations) => {
-// console.log(serializations);
-                //If no successful transformation.
-                if(serializations
-                    .map(function(e){return e.result;})
-                    .indexOf('pass') < 0){
-                  resStatus(res, 406);
-                  return next();
-                }
-                else {
-                  var responseSent = false;
-                  serializations.forEach(function(s){
-                    if(s.result == 'pass' && !responseSent){
-                      responseSent = true;
-                      //XXX: If success was due to resource being HTML return the data as is, otherwise we can't serialize
-                      var outputData = (req.requestedType == s.fromContentType) ? data : s.data;
-// console.log(s);
-                      if(rdfaTypes.indexOf(req.requestedType) > -1){
-                        if(rdfaTypes.indexOf(s.fromContentType) > -1){
-                          outputData = data;
-                        }
-                        else {
-                          resStatus(res, 406);
-                          return next();
-                        }
-                      }
-
-                      res.set('Content-Type', req.requestedType +';charset=utf-8');
-                      res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
-                      res.set('ETag', etag(outputData));
-                      res.set('Last-Modified', stats.mtime);
-                      res.set('Vary', 'Origin');
-                      res.set('Allow', 'GET, HEAD, OPTIONS');
-
-                      switch(req.method) {
-                        case 'GET': default:
-                          res.status(200);
-                          res.send(outputData);
-                          break;
-                        case 'HEAD':
-                          res.status(200);
-                          res.send();
-                          break;
-                        case 'OPTIONS':
-                          res.status(204);
-                          break;
-                      }
-
-                      res.end();
-                      return next();
-                    }
-                  });
-                }
-              })
-              .catch((error) => {
-                console.log('--- catch: `return Promise.all(checkSerializations)` ');
-                console.log(error);
-                res.status(500);
-                res.end();
-                return next();
-              });
-          }
-
-          doSerializations(data, serializeOptions);
-        });
-      }
-      else {
-        res.status(403);
-        return next();
-      }
-    }
-    else if(stats.isDirectory()) {
-      fs.readdir(req.requestedPath, function(error, files){
-        if(error) {
-          console.log("Can't readdir: " + req.requestedPath); //throw err;
-        }
-
-        var baseURL = req.getUrl().endsWith('/') ? req.getUrl() : req.getUrl() + '/';
-
-        var profile = 'http://www.w3.org/ns/json-ld#expanded';
-        var data, nsLDP = '';
-        if(typeof options !== 'undefined' && 'jsonld' in options && 'profile' in options.jsonld){
-          switch(options.jsonld.profile){
-            default:
-              profile = 'http://www.w3.org/ns/json-ld#expanded';
-              nsLDP = 'http://www.w3.org/ns/ldp#';
-              break;
-            case 'http://www.w3.org/ns/json-ld#compacted':
-              profile = 'http://www.w3.org/ns/json-ld#compacted';
-              break;
-          }
-        }
-
-        var contains = [];
-        for (var i = 0; i < files.length; i++) {
-          var file = files[i];
-          contains.push({
-            "@id": baseURL + file,
-            "@type": [ nsLDP + 'Resource', nsLDP + 'RDFSource' ]
-          });
-        }
-
-        var data = {};
-        if(profile == 'http://www.w3.org/ns/json-ld#compacted'){
-          data["@context"] = 'http://www.w3.org/ns/ldp';
-        }
-        data = Object.assign(data, {
-          "@id": baseURL,
-          "@type": [ nsLDP+'Resource', nsLDP+'RDFSource', nsLDP+'Container', nsLDP+'BasicContainer' ]
-        });
-
-        if(contains.length > 0) {
-          data[nsLDP+'contains'] = contains;
-        }
-
-        if(profile == 'http://www.w3.org/ns/json-ld#expanded'){
-          data = [data];
-        }
-
-        data = JSON.stringify(data) + "\n";
-
-        var respond = function() {
-          return new Promise(function(resolve, reject) {
-            if(req.method == 'OPTIONS' || req.requestedType == 'application/ld+json') {
-              return resolve(data);
-            }
-            else {
-              var fromContentType = 'application/ld+json';
-              var toContentType = req.requestedType;
-              var serializeOptions = { 'subjectURI': req.getUrl() };
-
-              if(rdfaTypes.indexOf(toContentType) > -1){
-                return reject({'toContentType': 'text/html'});
-              }
-              else {
-                //TODO: the resolve/reject should happen at a lower-level.
-                return serializeData(data, fromContentType, toContentType, options).then(
-                  function(i) { resolve(i); },
-                  function(j) { reject(j); }
-                );
-              }
-            }
-          });
-        };
-
-        respond().then(
-          function(data) {
-            if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
-              res.status(304);
-              res.end();
-              return next();
-            }
-
-            parameterProfile = '';
-            if(req.requestedType == 'application/ld+json') {
-              parameterProfile = ';profile="'+profile+'"';
-            }
-
-            res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type", <http://www.w3.org/ns/ldp#Container>; rel="type", <http://www.w3.org/ns/ldp#BasicContainer>; rel="type"');
-            res.set('Content-Type', req.requestedType + ';charset=utf-8' + parameterProfile);
-            res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
-            res.set('ETag', etag(data));
-            res.set('Last-Modified', stats.mtime);
-            res.set('Vary', 'Origin');
-            res.set('Accept-Post', 'text/html, application/xhtml+xml, application/ld+json, text/turtle');
-            res.set('Allow', 'GET, HEAD, OPTIONS, POST');
-
-            switch(req.method) {
-              case 'GET': default:
-                res.status(200);
-                res.send(data);
-                break;
-              case 'HEAD':
-                res.status(200);
-                res.send();
-                break;
-              case 'OPTIONS':
-                res.status(204);
-                res.send();
-                break;
-            }
-            res.end();
-            return next();
-          },
-          function(reason){
-            if('toContentType' in reason && reason.toContentType == 'text/html'){
-              resStatus(res, 406);
-            }
-            else {
-              res.status(500);
-              res.end();
-            }
-            return next();
-          }
-        );
-      });
-    }
-    return;
-  });
-}
-
 function postContainer(req, res, next, options){
   options = options || {};
   options['fileNameSuffix'] = ('fileNameSuffix' in options) ? encodeURIComponent(options['fileNameSuffix']) : '';
@@ -1379,47 +1056,6 @@ function formatToMimeType(format){
   }
 }
 
-//From https://github.com/linkeddata/dokieli/scripts/do.js
-function getGraphFromData(data, options) {
-  options = options || {};
-  if (!('contentType' in options)) {
-    options['contentType'] = 'text/turtle';
-  }
-  if (!('subjectURI' in options)) {
-    options['subjectURI'] = '_:dokieli';
-  }
-
-  return SimpleRDF.parse(data, options['contentType'], options['subjectURI']);
-}
-
-function getGraph(url) {
-    return SimpleRDF(vocab, url, null, RDFstore).get();
-}
-
-function serializeGraph(g, options) {
-  options = options || {};
-  if (!('contentType' in options)) {
-    options['contentType'] = 'text/turtle';
-  }
-
-  return RDFstore.serializers[options.contentType].serialize(g._graph);
-}
-
-function serializeData(data, fromContentType, toContentType, options) {
-  var o = {
-    'contentType': fromContentType,
-    'subjectURI': options.subjectURI
-  };
-  return getGraphFromData(data, o).then(
-    function(g) {
-      return serializeGraph(g, { 'contentType': toContentType });
-    },
-    function(reason) {
-      return Promise.reject(reason);
-    }
-  );
-}
-
 //https://github.com/solid/solid.js/blob/master/lib/util/web-util.js
 function parseLinkHeader(link) {
   if (!link) {
@@ -1472,10 +1108,6 @@ function encodeString(string) {
 
 function decodeString(string) {
   return decodeURIComponent(string.replace(/\+/g,  " "));
-}
-
-function htmlEntities(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function preSafe(s) {
@@ -1769,36 +1401,17 @@ function getInboxNotifications(data, options) {
   );
 }
 
-function resStatus(res, status){
-  res.status(status);
-  switch(status){
-    default:
-      break;
-    case 406:
-      var data = "HTTP 406: Accept type not acceptable. See also https://tools.ietf.org/html/rfc7231#section-6.5.6\n";
-      break;
-  }
-  if (typeof data !== 'undefined'){
-    res.send(data);
-  }
-  res.end();
-}
-
 //TODO: clean this up
 module.exports = {
-express,
 getConfigFile,
 config,
 init,
-app,
-
 XMLHttpRequest,
 SimpleRDF,
 vocab,
 prefixes,
 prefixesRDFa,
 RDFstore,
-htmlEntities,
 preSafe,
 discoverInbox,
 getInboxNotifications,
@@ -1810,12 +1423,7 @@ postResource,
 putResource,
 parseLinkHeader,
 parseProfileLinkRelation,
-getGraph,
-getGraphFromData,
-serializeData,
 getBaseURL,
 getExternalBaseURL,
-handleResource,
-getSerialization,
-resStatus,
+app
 }
