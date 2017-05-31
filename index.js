@@ -18,6 +18,8 @@ const { getGraph, getGraphFromData, resStatus, serializeData } = require('./src/
 
 var handleResource = require('./src/server/middleware/handle-resource.js');
 
+var app;
+
 var formats = {parsers: {}}
 formats.parsers['application/ld+json'] = JsonLdParser
 formats.parsers['text/turtle'] = N3Parser
@@ -205,7 +207,8 @@ function init(options){
     config = (options && options.config) ? options.config : config();
 console.log(config);
 
-    var app = createServer(config);
+    // app is a global...also exported for using mayktso as an expres()
+    app = createServer(config);
 
     app.use(function(req, res, next) {
       res.header('X-Powered-By', mayktsoURI);
@@ -1422,4 +1425,5 @@ parseLinkHeader,
 parseProfileLinkRelation,
 getBaseURL,
 getExternalBaseURL,
+app
 }
