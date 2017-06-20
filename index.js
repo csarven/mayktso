@@ -962,9 +962,18 @@ function handleResource(req, res, next, options){
         var contains = [];
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
+
+          var resourceTypes = [ nsLDP + 'Resource', nsLDP + 'RDFSource'];
+          try {
+            fs.statSync(file).isDirectory();
+            resourceTypes.push(nsLDP + 'Container');
+            resourceTypes.push(nsLDP + 'BasicContainer');
+            file = file + '/';
+          }catch(e){ }
+
           contains.push({
             "@id": baseURL + file,
-            "@type": [ nsLDP + 'Resource', nsLDP + 'RDFSource' ]
+            "@type": resourceTypes
           });
         }
 
