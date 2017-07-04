@@ -197,16 +197,22 @@ console.log(config);
 
     app.use(function(req, res, next) {
       res.header('X-Powered-By', mayktsoURI);
-      res.header("Access-Control-Allow-Credentials", "true");
       res.header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS, POST, PUT");
-      if(req.header('Origin')) {
-        res.header("Access-Control-Allow-Origin", req.header('Origin'));
+
+      var origin = req.header('Origin');
+      if(origin) {
+        if(origin.trim().toLowerCase() == 'null' || origin.trim().toLowerCase() == 'undefined') {
+          res.header("Access-Control-Allow-Origin", req.header('Origin'));
+          res.header("Access-Control-Allow-Credentials", "true");
+        }
       }
       else {
         res.header("Access-Control-Allow-Origin", "*");
+        res.header("Access-Control-Allow-Credentials", "true");
       }
       res.header("Access-Control-Allow-Headers", "Content-Length, Content-Type, If-None-Match, Link, Location, Origin, Slug, X-Requested-With");
-       res.header("Access-Control-Expose-Headers", "Accept-Post, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin, Allow, Content-Length, Content-Type, ETag, Last-Modified, Link, Location, Updates-Via, Vary");
+      res.header("Access-Control-Expose-Headers", "Accept-Post, Access-Control-Allow-Headers, Access-Control-Allow-Methods, Access-Control-Allow-Origin, Allow, Content-Length, Content-Type, ETag, Last-Modified, Link, Location, Updates-Via, Vary");
+      res.set('Vary', 'Origin, Accept-Encoding');
       return next();
     });
 
@@ -693,7 +699,6 @@ function getTarget(req, res, next){
         res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
         res.set('ETag', etag(outputData));
         res.set('Last-Modified', stats.mtime);
-        res.set('Vary', 'Origin');
         res.set('Allow', 'GET, HEAD, OPTIONS');
       }
 
@@ -825,7 +830,6 @@ function handleResource(req, res, next, options){
       if(req.method == 'OPTIONS'){
         res.set('Content-Type', 'text/plain');
         res.set('Content-Length', '0');
-        res.set('Vary', 'Origin');
         res.set('Allow', 'GET, HEAD, OPTIONS, PUT, POST');
         res.status(204);
         res.end();
@@ -897,7 +901,6 @@ function handleResource(req, res, next, options){
                       res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
                       res.set('ETag', etag(outputData));
                       res.set('Last-Modified', stats.mtime);
-                      res.set('Vary', 'Origin');
                       res.set('Allow', 'GET, HEAD, OPTIONS');
 
                       switch(req.method) {
@@ -1038,7 +1041,6 @@ function handleResource(req, res, next, options){
             res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
             res.set('ETag', etag(data));
             res.set('Last-Modified', stats.mtime);
-            res.set('Vary', 'Origin');
             res.set('Accept-Post', 'text/html, application/xhtml+xml, application/ld+json, text/turtle');
             res.set('Allow', 'GET, HEAD, OPTIONS, POST');
 
