@@ -202,7 +202,7 @@ console.log(config);
       var origin = req.header('Origin');
       if(origin) {
         var o = origin.trim().toLowerCase();
-        if(o != 'null' && o != 'undefined' && !o.startsWith('http:') && !o.startsWith('https:')) {
+        if(o != 'null' && o != 'undefined' && (o.startsWith('http:') || o.startsWith('https:'))) {
           res.header("Access-Control-Allow-Origin", req.header('Origin'));
           res.header("Access-Control-Allow-Credentials", "true");
         }
