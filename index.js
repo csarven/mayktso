@@ -1245,7 +1245,7 @@ function postContainer(req, res, next, options){
               return;
             });
           }
-          else if(availableNonRDFTypes.indexOf(mediaType) > -1) { {
+          else if(availableNonRDFTypes.indexOf(mediaType) > -1) {
             //TODO: Revisit this
             // gcDirectory(basePath);
             //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
