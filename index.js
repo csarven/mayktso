@@ -47,8 +47,10 @@ var XMLHttpRequest = require('xhr2');
 //var accepts = require('accepts');
 var contentType = require('content-type');
 var bodyParser = require('body-parser');
+var mime = require('mime');
 
 var availableTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
+var availableNonRDFTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml'];
 var rdfaTypes = ['application/xhtml+xml', 'text/html'];
 var mayktsoURI = 'https://github.com/csarven/mayktso';
 
@@ -223,7 +225,7 @@ console.log(config);
       }
     };
     app.use(bodyParser.urlencoded({ extended: true }));
-    app.use(bodyParser.raw({ verify: rawBodySaver, type: '*/*' }));
+    app.use(bodyParser.raw({ verify: rawBodySaver, type: '*/*', limit: config.maxPayloadSize }));
 
     app.use(function(req, res, next) {
       req.getRootUrl = function() {
@@ -844,97 +846,125 @@ function handleResource(req, res, next, options){
     if (stats.isFile()) {
       var isReadable = stats.mode & 4 ? true : false;
       if (isReadable) {
-        fs.readFile(req.requestedPath, 'utf8', function(error, data){
-          if (error) { console.log(error); }
+        if (availableTypes.indexOf(req.requestedType) > -1) {
+          fs.readFile(req.requestedPath, 'utf8', function(error, data){
+            if (error) { console.log(error); }
 
-          if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
-            res.status(304);
-            res.end();
-            return next();
-          }
+            if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
+              res.status(304);
+              res.end();
+              return next();
+            }
 
-          if(req.requestedPath.startsWith(config.rootPath + '/' + config.queuePath)) {
-            res.status(200);
-            res.send(data);
-            res.end();
-            deleteResource(req.requestedPath);
-          }
+            if(req.requestedPath.startsWith(config.rootPath + '/' + config.queuePath)) {
+              res.status(200);
+              res.send(data);
+              res.end();
+              deleteResource(req.requestedPath);
+            }
 
-          var toContentType = req.requestedType;
-          var serializeOptions = { 'subjectURI': req.getUrl() };
+            var toContentType = req.requestedType;
+            var serializeOptions = { 'subjectURI': req.getUrl() };
 
-          var doSerializations = function(data, serializeOptions){
-            var checkSerializations = [];
-            availableTypes.forEach(function(fromContentType){
-              //XXX: toContentType is application/ld+json because we need to see what is serializable since text/html doesn't have a serializer yet. This is not great because we have to rerun the getSerialization in some cases eg resource is Turtle, fromContentType is text/turtle, toContentType is application/ld+json gives a success but the request is text/turtle so we reuse the requestedType in place of toContentType in the second time around.
-              checkSerializations.push(getSerialization(data, fromContentType, 'application/ld+json', serializeOptions, req.requestedType));
-            });
-
-            return Promise.all(checkSerializations)
-              .then((serializations) => {
-// console.log(serializations);
-                //If no successful transformation.
-                if(serializations
-                    .map(function(e){return e.result;})
-                    .indexOf('pass') < 0){
-                  resStatus(res, 406);
-                  return next();
-                }
-                else {
-                  var responseSent = false;
-                  serializations.forEach(function(s){
-                    if(s.result == 'pass' && !responseSent){
-                      responseSent = true;
-                      //XXX: If success was due to resource being HTML return the data as is, otherwise we can't serialize
-                      var outputData = (req.requestedType == s.fromContentType) ? data : s.data;
-// console.log(s);
-                      if(rdfaTypes.indexOf(req.requestedType) > -1){
-                        if(rdfaTypes.indexOf(s.fromContentType) > -1){
-                          outputData = data;
-                        }
-                        else {
-                          resStatus(res, 406);
-                          return next();
-                        }
-                      }
-
-                      res.set('Content-Type', req.requestedType +';charset=utf-8');
-                      res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
-                      res.set('ETag', etag(outputData));
-                      res.set('Last-Modified', stats.mtime);
-                      res.set('Allow', 'GET, HEAD, OPTIONS');
-
-                      switch(req.method) {
-                        case 'GET': default:
-                          res.status(200);
-                          res.send(outputData);
-                          break;
-                        case 'HEAD':
-                          res.status(200);
-                          res.send();
-                          break;
-                        case 'OPTIONS':
-                          res.status(204);
-                          break;
-                      }
-
-                      res.end();
-                      return next();
-                    }
-                  });
-                }
-              })
-              .catch((error) => {
-                console.log('--- catch: `return Promise.all(checkSerializations)` ');
-                console.log(error);
-                res.status(500);
-                res.end();
-                return next();
+            var doSerializations = function(data, serializeOptions){
+              var checkSerializations = [];
+              availableTypes.forEach(function(fromContentType){
+                //XXX: toContentType is application/ld+json because we need to see what is serializable since text/html doesn't have a serializer yet. This is not great because we have to rerun the getSerialization in some cases eg resource is Turtle, fromContentType is text/turtle, toContentType is application/ld+json gives a success but the request is text/turtle so we reuse the requestedType in place of toContentType in the second time around.
+                checkSerializations.push(getSerialization(data, fromContentType, 'application/ld+json', serializeOptions, req.requestedType));
               });
+
+              return Promise.all(checkSerializations)
+                .then((serializations) => {
+// console.log(serializations);
+                  //If no successful transformation.
+                  if(serializations
+                      .map(function(e){return e.result;})
+                      .indexOf('pass') < 0){
+                    resStatus(res, 406);
+                    return next();
+                  }
+                  else {
+                    var responseSent = false;
+                    serializations.forEach(function(s){
+                      if(s.result == 'pass' && !responseSent){
+                        responseSent = true;
+                        //XXX: If success was due to resource being HTML return the data as is, otherwise we can't serialize
+                        var outputData = (req.requestedType == s.fromContentType) ? data : s.data;
+// console.log(s);
+                        if(rdfaTypes.indexOf(req.requestedType) > -1){
+                          if(rdfaTypes.indexOf(s.fromContentType) > -1){
+                            outputData = data;
+                          }
+                          else {
+                            resStatus(res, 406);
+                            return next();
+                          }
+                        }
+
+                        res.set('Content-Type', req.requestedType +';charset=utf-8');
+                        res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
+                        res.set('ETag', etag(outputData));
+                        res.set('Last-Modified', stats.mtime);
+                        res.set('Allow', 'GET, HEAD, OPTIONS');
+
+                        switch(req.method) {
+                          case 'GET': default:
+                            res.status(200);
+                            res.send(outputData);
+                            break;
+                          case 'HEAD':
+                            res.status(200);
+                            res.send();
+                            break;
+                          case 'OPTIONS':
+                            res.status(204);
+                            break;
+                        }
+
+                        res.end();
+                        return next();
+                      }
+                    });
+                  }
+                })
+                .catch((error) => {
+                  console.log('--- catch: `return Promise.all(checkSerializations)` ');
+                  console.log(error);
+                  res.status(500);
+                  res.end();
+                  return next();
+                });
+            }
+
+            doSerializations(data, serializeOptions);
+          });
+        }
+        else {
+          var outputData = fs.readFileSync(req.requestedPath);
+          res.set('Content-Type', mime.lookup(req.requestedPath));
+          res.set('Content-Length', stats.size);
+          // res.set('ETag', etag(outputData));
+          res.set('Last-Modified', stats.mtime);
+          res.set('Allow', 'GET, HEAD, OPTIONS');
+
+          switch(req.method) {
+            case 'GET': default:
+              res.status(200);
+              res.send(outputData);
+              break;
+            case 'HEAD':
+              res.status(200);
+              res.send();
+              break;
+            case 'OPTIONS':
+              res.status(204);
+              break;
           }
 
-          doSerializations(data, serializeOptions);
-        });
+          res.end();
+          return next();
+        }
+
       }
       else {
         res.status(403);
@@ -1119,7 +1149,7 @@ function postContainer(req, res, next, options){
     }
   }
 
-  if(availableTypes.indexOf(mediaType) > -1) {
+  if(availableTypes.indexOf(mediaType) > -1 || availableNonRDFTypes.indexOf(mediaType) > -1) {
     try {
       var contentLength = Buffer.byteLength(data, 'utf-8');
     }
@@ -1133,7 +1163,6 @@ function postContainer(req, res, next, options){
       storeMeta(req, res, next, Object.assign(options, { "file": file }));
       return;
     }
-
     var createRequest = (contentLength < config.maxPayloadSize) ? true : false;
 
     if(req.method == 'PUT' && lastPath.length > 0 && !lastPath.match(/\/?\.\.+\/?/g) && !fs.existsSync(basePath + lastPath)) {
@@ -1176,6 +1205,7 @@ function postContainer(req, res, next, options){
 
       if(createRequest) {
         if(stats.isDirectory() && pathWriteable) {
+          if(availableTypes.indexOf(mediaType) > -1) {
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
 // console.log(g);
@@ -1214,6 +1244,22 @@ function postContainer(req, res, next, options){
               storeMeta(req, res, next, Object.assign(options, { "file": file }));
               return;
             });
+          }
+          else if(availableNonRDFTypes.indexOf(mediaType) > -1) { {
+            //TODO: Revisit this
+            // gcDirectory(basePath);
+            //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
+            fs.writeFile(file, data, function(x) {
+              // console.log(uri);
+              res.set('Location', uri);
+              res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#NonRDFSource>; rel="type"');
+              res.status(201);
+              res.send();
+              res.end();
+              storeMeta(req, res, next, Object.assign(options, { "file": file }));
+              return;
+            });
+          }
         }
         else {
           res.status(405);
