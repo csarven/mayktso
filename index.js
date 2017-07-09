@@ -260,7 +260,9 @@ console.log(config);
     app.use(function(req, res, next) {
 //      module.exports.accept = accept = accepts(req);
       req.requestedType = req.accepts(availableTypes);
-      req.requestedPath = config.rootPath + req.originalUrl;
+      var qPosition = req.originalUrl.indexOf('?');
+      req.requestedPath = (qPosition > -1) ? config.rootPath + req.originalUrl.substr(0, qPosition) : config.rootPath + req.originalUrl;
+
       // console.log(req);
       // console.log(res);
 
