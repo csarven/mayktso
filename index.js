@@ -825,7 +825,9 @@ function handleResource(req, res, next, options){
       break;
   }
 
-  if(!req.requestedType){
+  var requestedPathMimeType = mime.lookup(req.requestedPath);
+
+  if(!req.accepts(requestedPathMimeType) && !req.requestedType){
     resStatus(res, 406);
     return next();
   }
@@ -845,10 +847,16 @@ function handleResource(req, res, next, options){
       return next();
     }
 
+// console.log(requestedPathMimeType);
+// console.log(req.accepts(requestedPathMimeType));
+// console.log(req.accepts(availableTypes));
+// console.log(availableTypes.indexOf(requestedPathMimeType));
+// console.log(availableTypes.indexOf(req.requestedType));
+
     if (stats.isFile()) {
       var isReadable = stats.mode & 4 ? true : false;
       if (isReadable) {
-        if (availableTypes.indexOf(req.requestedType) > -1) {
+        if (availableNonRDFTypes.indexOf(requestedPathMimeType) < 0) {
           fs.readFile(req.requestedPath, 'utf8', function(error, data){
             if (error) { console.log(error); }
 
@@ -943,9 +951,9 @@ function handleResource(req, res, next, options){
         }
         else {
           var outputData = fs.readFileSync(req.requestedPath);
-          res.set('Content-Type', mime.lookup(req.requestedPath));
+          res.set('Content-Type', requestedPathMimeType);
           res.set('Content-Length', stats.size);
-          // res.set('ETag', etag(outputData));
+          res.set('ETag', etag(outputData));
           res.set('Last-Modified', stats.mtime);
           res.set('Allow', 'GET, HEAD, OPTIONS');
 
@@ -966,7 +974,6 @@ function handleResource(req, res, next, options){
           res.end();
           return next();
         }
-
       }
       else {
         res.status(403);
