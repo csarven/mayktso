@@ -221,7 +221,19 @@ console.log(config);
 
     var rawBodySaver = function (req, res, buf, encoding) {
       if (buf && buf.length) {
-        req.rawBody = buf.toString(encoding || 'utf8');
+        try {
+          var mediaType = contentType.parse(req.headers['content-type']).type;
+          if(mediaType && availableNonRDFTypes.indexOf(mediaType) >  -1) {
+            req.rawBody = buf;
+          }
+          else {
+            req.rawBody = buf.toString(encoding || 'utf8');
+          }
+
+        }
+        catch(e) {
+          req.rawBody = buf.toString(encoding || 'utf8');
+        }
       }
     };
     app.use(bodyParser.urlencoded({ extended: true }));
@@ -1258,8 +1270,7 @@ function postContainer(req, res, next, options){
             //TODO: Revisit this
             // gcDirectory(basePath);
             //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
-            fs.writeFile(file, data, function(x) {
-              // console.log(uri);
+            fs.writeFile(file, data, 'binary', function(x) {
               res.set('Location', uri);
               res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#NonRDFSource>; rel="type"');
               res.status(201);
