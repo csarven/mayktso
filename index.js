@@ -49,12 +49,11 @@ var contentType = require('content-type');
 var bodyParser = require('body-parser');
 var mime = require('mime');
 
-var availableTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
-//TODO:  'image/svg+xml'
-var availableNonRDFTypes = ['text/css', 'application/javascript'];
-var availableNonRDFBinaryTypes = ['image/png', 'image/jpeg', 'image/gif'];
+var acceptRDFTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
+var acceptRDFaTypes = ['application/xhtml+xml', 'text/html'];
+var acceptNonRDFTypes = ['text/css', 'application/javascript', 'image/svg+xml'];
+var acceptNonRDFBinaryTypes = ['image/png', 'image/jpeg', 'image/gif'];
 
-var rdfaTypes = ['application/xhtml+xml', 'text/html'];
 var mayktsoURI = 'https://github.com/csarven/mayktso';
 
 var vocab = {
@@ -226,7 +225,7 @@ console.log(config);
       if (buf && buf.length) {
         try {
           var mediaType = contentType.parse(req.headers['content-type']).type;
-          if(mediaType && availableNonRDFBinaryTypes.indexOf(mediaType) >  -1) {
+          if(mediaType && acceptNonRDFBinaryTypes.indexOf(mediaType) >  -1) {
             req.rawBody = buf;
           }
           else {
@@ -274,7 +273,7 @@ console.log(config);
 
     app.use(function(req, res, next) {
 //      module.exports.accept = accept = accepts(req);
-      req.requestedType = req.accepts(availableTypes);
+      req.requestedType = req.accepts(acceptRDFTypes);
       var qPosition = req.originalUrl.indexOf('?');
       req.requestedPath = (qPosition > -1) ? config.rootPath + req.originalUrl.substr(0, qPosition) : config.rootPath + req.originalUrl;
 
@@ -792,7 +791,7 @@ function getSerialization(data, fromContentType, toContentType, serializeOptions
 // console.log(outputData);
 
       if(requestedType){
-        if(requestedType == toContentType || rdfaTypes.indexOf(requestedType) > -1) {
+        if(requestedType == toContentType || acceptRDFaTypes.indexOf(requestedType) > -1) {
           return {
             'fromContentType': fromContentType,
             'toContentType': toContentType,
@@ -844,9 +843,9 @@ function handleResource(req, res, next, options){
 
 // console.log(requestedPathMimeType);
 // console.log(req.accepts(requestedPathMimeType));
-// console.log(req.accepts(availableTypes));
-// console.log(availableTypes.indexOf(requestedPathMimeType));
-// console.log(availableTypes.indexOf(req.requestedType));
+// console.log(req.accepts(acceptRDFTypes));
+// console.log(acceptRDFTypes.indexOf(requestedPathMimeType));
+// console.log(acceptRDFTypes.indexOf(req.requestedType));
 
   if(!req.accepts(requestedPathMimeType) && !req.requestedType){
     resStatus(res, 406);
@@ -871,8 +870,8 @@ function handleResource(req, res, next, options){
     if (stats.isFile()) {
       var isReadable = stats.mode & 4 ? true : false;
       if (isReadable) {
-        //TODO: Change this to availableTypes (RDF) but watch out for application/octet-stream or whatever in req.accepts()
-        if (availableNonRDFTypes.indexOf(requestedPathMimeType) < 0 && availableNonRDFBinaryTypes.indexOf(requestedPathMimeType) < 0) {
+        //TODO: Change this to acceptRDFTypes (RDF) but watch out for application/octet-stream or whatever in req.accepts()
+        if (acceptNonRDFTypes.indexOf(requestedPathMimeType) < 0 && acceptNonRDFBinaryTypes.indexOf(requestedPathMimeType) < 0) {
           fs.readFile(req.requestedPath, 'utf8', function(error, data){
             if (error) { console.log(error); }
 
@@ -894,7 +893,7 @@ function handleResource(req, res, next, options){
 
             var doSerializations = function(data, serializeOptions){
               var checkSerializations = [];
-              availableTypes.forEach(function(fromContentType){
+              acceptRDFTypes.forEach(function(fromContentType){
                 //XXX: toContentType is application/ld+json because we need to see what is serializable since text/html doesn't have a serializer yet. This is not great because we have to rerun the getSerialization in some cases eg resource is Turtle, fromContentType is text/turtle, toContentType is application/ld+json gives a success but the request is text/turtle so we reuse the requestedType in place of toContentType in the second time around.
                 checkSerializations.push(getSerialization(data, fromContentType, 'application/ld+json', serializeOptions, req.requestedType));
               });
@@ -917,8 +916,8 @@ function handleResource(req, res, next, options){
                         //XXX: If success was due to resource being HTML return the data as is, otherwise we can't serialize
                         var outputData = (req.requestedType == s.fromContentType) ? data : s.data;
 // console.log(s);
-                        if(rdfaTypes.indexOf(req.requestedType) > -1){
-                          if(rdfaTypes.indexOf(s.fromContentType) > -1){
+                        if(acceptRDFaTypes.indexOf(req.requestedType) > -1){
+                          if(acceptRDFaTypes.indexOf(s.fromContentType) > -1){
                             outputData = data;
                           }
                           else {
@@ -1065,7 +1064,7 @@ function handleResource(req, res, next, options){
               var toContentType = req.requestedType;
               var serializeOptions = { 'subjectURI': req.getUrl() };
 
-              if(rdfaTypes.indexOf(toContentType) > -1){
+              if(acceptRDFaTypes.indexOf(toContentType) > -1){
                 return reject({'toContentType': 'text/html'});
               }
               else {
@@ -1174,7 +1173,7 @@ function postContainer(req, res, next, options){
     }
   }
 
-  if(availableTypes.indexOf(mediaType) > -1 || availableNonRDFTypes.indexOf(mediaType) > -1) {
+  if(acceptRDFTypes.indexOf(mediaType) > -1 || acceptNonRDFTypes.indexOf(mediaType) > -1) {
     try {
       var contentLength = Buffer.byteLength(data, 'utf-8');
     }
@@ -1230,7 +1229,7 @@ function postContainer(req, res, next, options){
 
       if(createRequest) {
         if(stats.isDirectory() && pathWriteable) {
-          if(availableTypes.indexOf(mediaType) > -1) {
+          if(acceptRDFTypes.indexOf(mediaType) > -1) {
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
 // console.log(g);
@@ -1271,7 +1270,7 @@ function postContainer(req, res, next, options){
             });
           }
           else {
-            var encoding = (availableNonRDFBinaryTypes.indexOf(mediaType) > -1) ? 'binary' : '';
+            var encoding = (acceptNonRDFBinaryTypes.indexOf(mediaType) > -1) ? 'binary' : '';
             //TODO: Revisit this
             // gcDirectory(basePath);
             //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
