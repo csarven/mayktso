@@ -50,7 +50,10 @@ var bodyParser = require('body-parser');
 var mime = require('mime');
 
 var availableTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
-var availableNonRDFTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml'];
+//TODO:  'image/svg+xml'
+var availableNonRDFTypes = ['text/css', 'application/javascript'];
+var availableNonRDFBinaryTypes = ['image/png', 'image/jpeg', 'image/gif'];
+
 var rdfaTypes = ['application/xhtml+xml', 'text/html'];
 var mayktsoURI = 'https://github.com/csarven/mayktso';
 
@@ -223,7 +226,7 @@ console.log(config);
       if (buf && buf.length) {
         try {
           var mediaType = contentType.parse(req.headers['content-type']).type;
-          if(mediaType && availableNonRDFTypes.indexOf(mediaType) >  -1) {
+          if(mediaType && availableNonRDFBinaryTypes.indexOf(mediaType) >  -1) {
             req.rawBody = buf;
           }
           else {
@@ -839,6 +842,12 @@ function handleResource(req, res, next, options){
 
   var requestedPathMimeType = mime.lookup(req.requestedPath);
 
+// console.log(requestedPathMimeType);
+// console.log(req.accepts(requestedPathMimeType));
+// console.log(req.accepts(availableTypes));
+// console.log(availableTypes.indexOf(requestedPathMimeType));
+// console.log(availableTypes.indexOf(req.requestedType));
+
   if(!req.accepts(requestedPathMimeType) && !req.requestedType){
     resStatus(res, 406);
     return next();
@@ -859,16 +868,11 @@ function handleResource(req, res, next, options){
       return next();
     }
 
-// console.log(requestedPathMimeType);
-// console.log(req.accepts(requestedPathMimeType));
-// console.log(req.accepts(availableTypes));
-// console.log(availableTypes.indexOf(requestedPathMimeType));
-// console.log(availableTypes.indexOf(req.requestedType));
-
     if (stats.isFile()) {
       var isReadable = stats.mode & 4 ? true : false;
       if (isReadable) {
-        if (availableNonRDFTypes.indexOf(requestedPathMimeType) < 0) {
+        //TODO: Change this to availableTypes (RDF) but watch out for application/octet-stream or whatever in req.accepts()
+        if (availableNonRDFTypes.indexOf(requestedPathMimeType) < 0 && availableNonRDFBinaryTypes.indexOf(requestedPathMimeType) < 0) {
           fs.readFile(req.requestedPath, 'utf8', function(error, data){
             if (error) { console.log(error); }
 
@@ -1266,11 +1270,12 @@ function postContainer(req, res, next, options){
               return;
             });
           }
-          else if(availableNonRDFTypes.indexOf(mediaType) > -1) {
+          else {
+            var encoding = (availableNonRDFBinaryTypes.indexOf(mediaType) > -1) ? 'binary' : '';
             //TODO: Revisit this
             // gcDirectory(basePath);
             //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
-            fs.writeFile(file, data, 'binary', function(x) {
+            fs.writeFile(file, data, encoding, function(x) {
               res.set('Location', uri);
               res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#NonRDFSource>; rel="type"');
               res.status(201);
@@ -1317,6 +1322,7 @@ function postContainer(req, res, next, options){
       file = basePath + fileName + options.fileNameSuffix;
     }
     storeMeta(req, res, next, Object.assign(options, { "file": file }));
+    return;
   }
 }
 
