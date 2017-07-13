@@ -1272,8 +1272,7 @@ function postContainer(req, res, next, options){
           else {
             var encoding = (acceptNonRDFBinaryTypes.indexOf(mediaType) > -1) ? 'binary' : '';
 // console.log(file + ' ' + encoding);
-            //TODO: Revisit this
-            // gcDirectory(basePath);
+            gcDirectory(basePath);
             //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
             fs.writeFile(file, data, encoding, function(x) {
               res.set('Location', uri);
