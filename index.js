@@ -1173,7 +1173,7 @@ function postContainer(req, res, next, options){
     }
   }
 
-  if(acceptRDFTypes.indexOf(mediaType) > -1 || acceptNonRDFTypes.indexOf(mediaType) > -1) {
+  if(acceptRDFTypes.indexOf(mediaType) > -1 || acceptNonRDFTypes.indexOf(mediaType) > -1 || acceptNonRDFBinaryTypes.indexOf(mediaType) > -1) {
     try {
       var contentLength = Buffer.byteLength(data, 'utf-8');
     }
@@ -1271,6 +1271,7 @@ function postContainer(req, res, next, options){
           }
           else {
             var encoding = (acceptNonRDFBinaryTypes.indexOf(mediaType) > -1) ? 'binary' : '';
+// console.log(file + ' ' + encoding);
             //TODO: Revisit this
             // gcDirectory(basePath);
             //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
