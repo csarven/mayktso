@@ -824,7 +824,7 @@ function getSerialization(data, fromContentType, toContentType, serializeOptions
 
 function handleResource(req, res, next, options){
   options = options || {};
-
+// console.log(options);
   switch(req.method){
     case 'GET': case 'HEAD': case 'OPTIONS':
       break;
@@ -1000,9 +1000,7 @@ function handleResource(req, res, next, options){
         if(error) {
           console.log("Can't readdir: " + req.requestedPath); //throw err;
         }
-
         var baseURL = req.getUrl().endsWith('/') ? req.getUrl() : req.getUrl() + '/';
-
         var profile = 'http://www.w3.org/ns/json-ld#expanded';
         var data, nsLDP = '';
         if(typeof options !== 'undefined' && 'jsonld' in options && 'profile' in options.jsonld){
@@ -1023,10 +1021,13 @@ function handleResource(req, res, next, options){
 
           var resourceTypes = [ nsLDP + 'Resource', nsLDP + 'RDFSource'];
           try {
-            fs.statSync(file).isDirectory();
-            resourceTypes.push(nsLDP + 'Container');
-            resourceTypes.push(nsLDP + 'BasicContainer');
-            file = file + '/';
+            var f = fs.statSync(req.requestedPath + file);
+
+            if(f.isDirectory()){
+              resourceTypes.push(nsLDP + 'Container');
+              resourceTypes.push(nsLDP + 'BasicContainer');
+              file = file + '/';
+            }
           }catch(e){ }
 
           contains.push({
