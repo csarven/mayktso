@@ -165,7 +165,7 @@ function config(configFile){
   config['reportsPath'] = config.reportsPath || 'reports/';
   config['maxPayloadSize'] = config.maxPayloadSize || 100000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
-  config['proxyURL'] = config.proxyURL || 'https://dokie.li/proxy?uri=';
+  config['proxyURL'] = config.proxyURL || config['authority'] + '/proxy?uri=';
 
   var createDirectories = [config['inboxPath'], config['queuePath'], config['annotationPath'], config['reportsPath']];
   createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
@@ -294,6 +294,34 @@ console.log(config);
       // console.log('req.getUrl: ' + req.getUrl());
       // console.log('requestedPath: ' + req.requestedPath);
       return next();
+    });
+
+    app.use('/proxy', function(req, res, next){
+      switch(req.method){
+        case 'GET': case 'HEAD': case 'OPTIONS':
+          break;
+        default:
+          res.status(405);
+          res.set('Allow', 'GET, HEAD, OPTIONS');
+          res.end();
+          return next();
+          break;
+      }
+
+      if(req.query && 'uri' in req.query && req.query.uri.length > 0 && req.query.uri.indexOf(config.hostname) == -1 && req.query.uri.indexOf(config.hostname) == '128.0.0.1'){
+          var rO = {
+            'method': req.method,
+            'uri': req.query.uri,
+            headers: {'Accept': req.headers['accept']}
+          };
+          request(rO).pipe(res);
+      }
+      else {
+        res.status(400);
+        res.set('Allow', 'GET, HEAD, OPTIONS');
+        res.end();
+        return next();
+      }
     });
 
     var oR = (options && options.omitRoutes) ? '|' + options.omitRoutes.join('|') : '';
