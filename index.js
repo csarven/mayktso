@@ -297,7 +297,6 @@ console.log(config);
     });
 
     if(config.proxyPath.length > 0) {
-console.log(config.proxyPath);
       app.use(config.proxyPath, function(req, res, next){
         switch(req.method){
           case 'GET': case 'HEAD': case 'OPTIONS':
@@ -310,7 +309,7 @@ console.log(config.proxyPath);
             break;
         }
 
-        if(req.query && 'uri' in req.query && req.query.uri.length > 0 && req.query.uri.indexOf(config.hostname) == -1 && req.query.uri.indexOf('128.0.0.1') == -1){
+        if(req.query && 'uri' in req.query && req.query.uri.length > 0 && req.query.uri.indexOf(config.hostname) == -1 && req.query.uri.indexOf('127.0.0.1') == -1 && req.query.uri.indexOf('127.0.1.1') == -1){
             var rO = {
               'method': req.method,
               'uri': req.query.uri,
