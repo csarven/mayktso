@@ -165,7 +165,7 @@ function config(configFile){
   config['reportsPath'] = config.reportsPath || 'reports/';
   config['maxPayloadSize'] = config.maxPayloadSize || 100000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
-  config['proxyURL'] = config.proxyURL || config['authority'] + '/proxy?uri=';
+  config['proxyPath'] = config.proxyPath || config['authority'] + '/proxy';
 
   var createDirectories = [config['inboxPath'], config['queuePath'], config['annotationPath'], config['reportsPath']];
   createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
@@ -296,7 +296,7 @@ console.log(config);
       return next();
     });
 
-    app.use('/proxy', function(req, res, next){
+    app.use(config.proxyPath, function(req, res, next){
       switch(req.method){
         case 'GET': case 'HEAD': case 'OPTIONS':
           break;
