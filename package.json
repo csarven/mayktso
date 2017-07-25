@@ -37,6 +37,7 @@
     "node-uuid": "^1.4.7",
     "rdf-parser-rdfa": "git://github.com/rdf-ext/rdf-parser-rdfa.git#master",
     "rdf-store-ldp": "git://github.com/rdf-ext/rdf-store-ldp.git#master",
+    "request": "^2.81.0",
     "simplerdf": "^0.2.14",
     "simplerdf-parse": "git://github.com/nicola/simplerdf-parse.git#master",
     "xhr2": "^0.1.3"

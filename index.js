@@ -12,6 +12,7 @@ var N3Parser = require('rdf-parser-n3')
 var RdfaParser = require('rdf-parser-rdfa')
 var RdfXmlParser = require('rdf-parser-rdfxml')
 var SimpleRDFParse = require('simplerdf-parse')
+var request = require('request')
 
 var formats = {parsers: {}}
 formats.parsers['application/ld+json'] = JsonLdParser
