@@ -1503,8 +1503,12 @@ function getGraphFromData(data, options) {
   if (!('subjectURI' in options)) {
     options['subjectURI'] = '_:dokieli';
   }
-
-  return SimpleRDF.parse(data, options['contentType'], options['subjectURI']);
+  if(acceptRDFTypes.indexOf(options['contentType']) > -1) {
+    return SimpleRDF.parse(data, options['contentType'], options['subjectURI']);
+  }
+  else {
+    return Promise.reject({'status': '415'});
+  }
 }
 
 function getGraph(url) {
