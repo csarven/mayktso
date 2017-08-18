@@ -309,7 +309,7 @@ console.log(config);
             break;
         }
 
-        if(req.query && 'uri' in req.query && req.query.uri.length > 0 && req.query.uri.indexOf(config.hostname) == -1 && req.query.uri.indexOf('127.0.0.1') == -1 && req.query.uri.indexOf('127.0.1.1') == -1){
+        if(req.query && 'uri' in req.query && req.query.uri.length > 0 && req.query.uri.indexOf(config.hostname) == -1 && req.query.uri.indexOf('127.0.0.1') == -1 && req.query.uri.indexOf('127.0.1.1') == -1 && !req.query.uri.startsWith('localhost') && !req.query.uri.startsWith('192.168.') && !req.query.uri.startsWith('176.16.') && !req.query.uri.startsWith('10.')){
             var rO = {
               'method': req.method,
               'uri': req.query.uri,
