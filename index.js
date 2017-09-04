@@ -1487,6 +1487,8 @@ function formatToMimeType(format){
       return 'application/ld+json';
     case 'turtle':
       return 'text/turtle';
+    case 'n3':
+      return 'text/n3';
     default:
       return format;
   }
