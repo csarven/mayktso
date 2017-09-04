@@ -805,6 +805,38 @@ function getTarget(req, res, next){
   });
 }
 
+function applyParserFixes(data, fromContentType, toContentType) {
+  switch(toContentType) {
+    case 'text/turtle':
+      //XXX: Workaround for rdf-parser-rdfa bug that gives '@langauge' instead of @type when encountering datatype in HTML+RDFa . TODO: Link to bug here
+      data = data.replace(/Z"@en;/, 'Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;');
+      break;
+
+    case 'application/ld+json':
+      var x = JSON.parse(data);
+
+      //XXX: Workaround for rdf-parser-rdfa bug that gives '@langauge' instead of @type when encountering datatype in HTML+RDFa . TODO: Link to bug here
+      var properties = ['https://www.w3.org/ns/activitystreams#published', 'https://www.w3.org/ns/activitystreams#updated']
+
+      for(var i = 0; i < x.length; i++){
+        for(var j = 0; j < properties.length; j++){
+          if(properties[j] in x[i]) {
+            x[i][properties[j]] = {
+              '@type': 'http://www.w3.org/2001/XMLSchema#dateTime',
+              '@value': x[i][properties[j]]['@value']
+            };
+          }
+        }
+      }
+
+      data = JSON.stringify(x) + '\n';
+      break;
+  }        
+
+  return data;
+}
+
+
 function getSerialization(data, fromContentType, toContentType, serializeOptions, requestedType) {
 // console.log('- - -' + fromContentType + ' ' + toContentType + ' ' + requestedType)
   if(fromContentType == 'application/ld+json'){
@@ -823,11 +855,13 @@ function getSerialization(data, fromContentType, toContentType, serializeOptions
       var outputData = (fromContentType == toContentType) ? data : transformedData;
 // console.log(outputData);
 
+      //XXX: Temporary workarounds until bugs are resolved upstream
+      if(acceptRDFaTypes.indexOf(fromContentType) > -1){
+        outputData = applyParserFixes(outputData, fromContentType, toContentType);
+      }
+
       if(requestedType){
         if(requestedType == toContentType || acceptRDFaTypes.indexOf(requestedType) > -1) {
-          //XXX: Workaround for rdf-parser-rdfa bug that gives '@langauge' instead of @type when encountering datatype in HTML+RDFa . TODO: Link to bug here
-          outputdata = outputData.replace(/Z"@en;/, 'Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;');
-
           return {
             'fromContentType': fromContentType,
             'toContentType': toContentType,
