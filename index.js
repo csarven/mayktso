@@ -1489,6 +1489,8 @@ function formatToMimeType(format){
       return 'text/turtle';
     case 'n3':
       return 'text/n3';
+    case 'ntriples':
+      return 'application/n-triples';
     default:
       return format;
   }
