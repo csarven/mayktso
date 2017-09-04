@@ -492,7 +492,7 @@ function getResourceArgv(url){
       function(i){
         console.log(i);
       },
-      function(){
+      function(reason){
         console.log('Error:');
         console.log(reason);
       }
@@ -511,17 +511,15 @@ function getResourceHandler(url, headers){
       var data = response.xhr.responseText;
 
       var toContentType;
-      if ('outputType' in argv && argv['outputType'] !== '' && (argv['o'] == 'text/turtle' || argv['o'] == 'application/ld+json')){
+      if ('outputType' in argv && argv['outputType'] !== '' && acceptRDFTypes.indexOf(argv['outputType']) > -1){
         toContentType = argv['outputType'];
       }
-      else if('o' in argv && argv['o'].length > 0 && (argv['o'] == 'text/turtle' || argv['o'] == 'application/ld+json')){
-        toContentType = argv['o'];
+      else if('o' in argv && argv['o'] !== ''){
+        toContentType = formatToMimeType(argv['o'].toLowerCase());
       }
       else {
         toContentType = headers['Accept'];
       }
-
-      toContentType = formatToMimeType(toContentType.toLowerCase());
 
       var options = { 'subjectURI': url };
 
