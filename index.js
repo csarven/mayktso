@@ -32,7 +32,7 @@ storeFormats.parsers['text/n3'] = N3Parser
 storeFormats.parsers['application/n-triples'] = N3Parser
 storeFormats.parsers['application/xhtml+xml'] = RdfaParser
 storeFormats.parsers['text/html'] = RdfaParser
-storeFormats.parsers['application/rdf+xml'] = RdfXmlParser
+// storeFormats.parsers['application/rdf+xml'] = RdfXmlParser
 RDFstore = new LdpStore(storeFormats)
 
 var fs = require('fs');
@@ -50,7 +50,7 @@ var contentType = require('content-type');
 var bodyParser = require('body-parser');
 var mime = require('mime');
 
-var acceptRDFTypes = ['application/ld+json', 'text/turtle', 'application/rdf+xml', 'application/xhtml+xml', 'text/html'];
+var acceptRDFTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
 var acceptRDFaTypes = ['application/xhtml+xml', 'text/html'];
 var acceptNonRDFTypes = ['text/css', 'application/javascript', 'image/svg+xml'];
 var acceptNonRDFBinaryTypes = ['image/png', 'image/jpeg', 'image/gif'];
