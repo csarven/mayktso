@@ -825,6 +825,9 @@ function getSerialization(data, fromContentType, toContentType, serializeOptions
 
       if(requestedType){
         if(requestedType == toContentType || acceptRDFaTypes.indexOf(requestedType) > -1) {
+          //XXX: Workaround for rdf-parser-rdfa bug that gives '@langauge' instead of @type when encountering datatype in HTML+RDFa . TODO: Link to bug here
+          outputdata = outputData.replace(/Z"@en;/, 'Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;');
+
           return {
             'fromContentType': fromContentType,
             'toContentType': toContentType,
