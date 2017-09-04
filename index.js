@@ -521,6 +521,10 @@ function getResourceHandler(url, headers){
         toContentType = headers['Accept'];
       }
 
+      if(acceptRDFaTypes.indexOf(toContentType) > -1) {
+        toContentType = 'application/ld+json';
+      }
+
       var options = { 'subjectURI': url };
 
       if(headers['Accept'] != toContentType) {
