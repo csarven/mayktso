@@ -50,7 +50,7 @@ var contentType = require('content-type');
 var bodyParser = require('body-parser');
 var mime = require('mime');
 
-var acceptRDFTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
+var acceptRDFTypes = ['application/ld+json', 'text/turtle', 'application/rdf+xml', 'application/xhtml+xml', 'text/html'];
 var acceptRDFaTypes = ['application/xhtml+xml', 'text/html'];
 var acceptNonRDFTypes = ['text/css', 'application/javascript', 'image/svg+xml'];
 var acceptNonRDFBinaryTypes = ['image/png', 'image/jpeg', 'image/gif'];
