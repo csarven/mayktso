@@ -67,7 +67,21 @@ var vocab = {
   "ldpconstrainedBy": { "@id": "http://www.w3.org/ns/ldp#constrainedBy", "@type": "@id", "@array": true  },
   "rdfsseeAlso": { "@id": "http://www.w3.org/2000/01/rdf-schema#seeAlso", "@type": "@id", "@array": true },
   "foafprimaryTopic": { "@id": "http://xmlns.com/foaf/0.1/primaryTopic", "@type": "@id" },
-  "owlsameAs": { "@id": "http://www.w3.org/2002/07/owl#sameAs", "@type": "@id", "@array": true }
+  "owlsameAs": { "@id": "http://www.w3.org/2002/07/owl#sameAs", "@type": "@id", "@array": true },
+  "asannounce": { "@id": "https://www.w3.org/ns/activitystreams#Announce", "@type": "@id", "@array": true  },
+  "assubject": { "@id": "https://www.w3.org/ns/activitystreams#subject", "@type": "@id", "@array": true },
+  "asobject": { "@id": "https://www.w3.org/ns/activitystreams#object", "@type": "@id", "@array": true },
+  "astarget": { "@id": "https://www.w3.org/ns/activitystreams#target", "@type": "@id", "@array": true },
+  "asrelationship": { "@id": "https://www.w3.org/ns/activitystreams#relationship", "@type": "@id", "@array": true },
+  "ascontext": { "@id": "https://www.w3.org/ns/activitystreams#context", "@type": "@id", "@array": true },
+  "asinReplyTo": { "@id": "https://www.w3.org/ns/activitystreams#inReplyTo", "@type": "@id", "@array": true },
+  "asactor": { "@id": "https://www.w3.org/ns/activitystreams#actor", "@type": "@id" },
+  "asupdated": "https://www.w3.org/ns/activitystreams#updated",
+  "aspublished": "https://www.w3.org/ns/activitystreams#published",
+  "ascontent": "https://www.w3.org/ns/activitystreams#content",
+  "asname": "https://www.w3.org/ns/activitystreams#name",
+  "asimage": { "@id": "https://www.w3.org/ns/activitystreams#image", "@type": "@id" },
+  "schemalicense": { "@id": "http://schema.org/license", "@type": "@id" }
 };
 
 var prefixes = {
@@ -1304,7 +1318,12 @@ function postContainer(req, res, next, options){
             SimpleRDF.parse(data, mediaType, uri).then(
               function(g) {
 // console.log(g);
-                if(g._graph.length > 0) {
+                var s = SimpleRDF(vocab, uri, g, RDFstore).child(uri);
+// console.log(s);
+                var validDataShape = checkDataShape(s, config);
+// console.log(validDataShape);
+
+                if(validDataShape && g._graph.length > 0) {
                   gcDirectory(basePath);
                   //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
                   fs.writeFile(file, data, function(x) {
@@ -1393,6 +1412,67 @@ function postContainer(req, res, next, options){
     }
     storeMeta(req, res, next, Object.assign(options, { "file": file }));
     return;
+  }
+}
+
+function checkDataShape(s, options){
+  if(typeof options !== 'undefined' && 'checkDataShape' in options && options.checkDataShape && options.checkDataShape.length > 0){
+
+    for (var i = 0; i < options.checkDataShape.length; i++) {
+      switch(options.checkDataShape[i].uri) {
+        case 'inbox/linkedresearch.org/cloud/':
+          var types = s.rdftype;
+          var resourceTypes = [];
+          types.forEach(function(type){
+            resourceTypes.push(type.toString());
+          });
+
+          if(resourceTypes.indexOf(vocab.asannounce["@id"]) < 0) {
+            console.log('checkDataShape as:Announce FAIL');
+            return false;
+          }
+          else if(typeof s.asobject == 'undefined') {
+            console.log('checkDataShape s.asobject FAIL: ' + s.asobject);
+            return false;
+          }
+          else if((typeof s.asupdated == 'undefined')){
+            console.log('checkDataShape s.asupdated FAIL: ' + s.asupdated);
+            return false;
+          }
+          else if(typeof s.schemalicense == 'undefined' && s.schema.license !== 'https://creativecommons.org/publicdomain/zero/1.0/') {
+            console.log('checkDataShape s.schemalicense FAIL: ' + s.schemalicense);
+            return false;
+          }
+          else {
+            var asupdated = s.graph().filter(function(t) {
+              return (t.predicate.nominalValue == vocab.asupdated && t.object.datatype && t.object.datatype.nominalValue == 'http://www.w3.org/2001/XMLSchema#dateTime') ? true : false;
+            });
+
+            if(asupdated.length == 0) {
+              console.log('checkDataShape s.asupdated FAIL: no xsd:dateTime');
+              return false;
+            }
+            else {
+              var regexp = /-?(?:[1-9][0-9][0-9][0-9]|0[1-9][0-9][0-9]|00[1-9][0-9]|000[1-9])-[0-9][0-9]-[0-9][0-9]T(?:[0-1][0-9]|2[0-4]):[0-5][0-9]:[0-5][0-9](?:\.[0-9]+)?(?:Z|[+\-][0-9][0-9]:[0-9][0-9])?/
+              var re = new RegExp(regexp).exec(asupdated);
+
+              if(re === null) {
+                console.log('checkDataShape s.asupdated FAIL: invalid xsd:dateTime ' + asupdated);
+                return false;
+              }
+            }
+          }
+          break;
+
+        default:
+          break;
+      }
+    }
+
+    return true;
+  }
+  else {
+    return true;
   }
 }
 
