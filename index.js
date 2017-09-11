@@ -829,7 +829,7 @@ function applyParserFixes(data, fromContentType, toContentType) {
     case 'application/ld+json':
       var x = JSON.parse(data);
 
-      //XXX: Workaround for rdf-parser-rdfa bug that gives '@langauge' instead of @type when encountering datatype in HTML+RDFa . TODO: Link to bug here
+      //XXX: Workaround for rdf-parser-rdfa bug that gives '@language' instead of @type when encountering datatype in HTML+RDFa . See also https://github.com/rdf-ext/rdf-parser-rdfa/issues/5
       var properties = ['https://www.w3.org/ns/activitystreams#published', 'https://www.w3.org/ns/activitystreams#updated']
 
       for(var i = 0; i < x.length; i++){
@@ -1320,7 +1320,7 @@ function postContainer(req, res, next, options){
 // console.log(g);
                 var s = SimpleRDF(vocab, uri, g, RDFstore).child(uri);
 // console.log(s);
-                var validDataShape = checkDataShape(s, config);
+                var validDataShape = checkDataShape(s, mediaType, config);
 // console.log(validDataShape);
 
                 if(validDataShape && g._graph.length > 0) {
@@ -1415,7 +1415,7 @@ function postContainer(req, res, next, options){
   }
 }
 
-function checkDataShape(s, options){
+function checkDataShape(s, mediaType, options){
   if(typeof options !== 'undefined' && 'checkDataShape' in options && options.checkDataShape && options.checkDataShape.length > 0){
 
     for (var i = 0; i < options.checkDataShape.length; i++) {
@@ -1445,14 +1445,15 @@ function checkDataShape(s, options){
           }
           else {
             var asupdated = s.graph().filter(function(t) {
-              return (t.predicate.nominalValue == vocab.asupdated && t.object.datatype && t.object.datatype.nominalValue == 'http://www.w3.org/2001/XMLSchema#dateTime') ? true : false;
+              ///FIXME: This t.object.datatype == rdf:langString is an exception due to a bug in rdf-parser-rdfa / green-turtle perhaps.
+              return (t.predicate.nominalValue == vocab.asupdated && t.object.datatype && (t.object.datatype.nominalValue == 'http://www.w3.org/2001/XMLSchema#dateTime' || (acceptRDFaTypes.indexOf(mediaType) > -1 && t.object.datatype == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString'))) ? true : false;
             });
-
             if(asupdated.length == 0) {
               console.log('checkDataShape s.asupdated FAIL: no xsd:dateTime');
               return false;
             }
             else {
+              //XXX: We probably shouldn't be doing this regex here. Isn't there a lowerlevel method for it?
               var regexp = /-?(?:[1-9][0-9][0-9][0-9]|0[1-9][0-9][0-9]|00[1-9][0-9]|000[1-9])-[0-9][0-9]-[0-9][0-9]T(?:[0-1][0-9]|2[0-4]):[0-5][0-9]:[0-5][0-9](?:\.[0-9]+)?(?:Z|[+\-][0-9][0-9]:[0-9][0-9])?/
               var re = new RegExp(regexp).exec(asupdated);
 
