@@ -1320,9 +1320,9 @@ function postContainer(req, res, next, options){
 // console.log(g);
                 var s = SimpleRDF(vocab, uri, g, RDFstore).child(uri);
 // console.log(s);
-                var validDataShape = checkDataShape(s, mediaType, config);
+                var validDataShape = checkDataShape(s, mediaType, basePath, config);
 // console.log(validDataShape);
-
+console.log(basePath);
                 if(validDataShape && g._graph.length > 0) {
                   gcDirectory(basePath);
                   //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
@@ -1415,58 +1415,60 @@ function postContainer(req, res, next, options){
   }
 }
 
-function checkDataShape(s, mediaType, options){
+function checkDataShape(s, mediaType, basePath, options){
   if(typeof options !== 'undefined' && 'checkDataShape' in options && options.checkDataShape && options.checkDataShape.length > 0){
 
     for (var i = 0; i < options.checkDataShape.length; i++) {
-      switch(options.checkDataShape[i].uri) {
-        case 'inbox/linkedresearch.org/cloud/':
-          var types = s.rdftype;
-          var resourceTypes = [];
-          types.forEach(function(type){
-            resourceTypes.push(type.toString());
-          });
-
-          if(resourceTypes.indexOf(vocab.asannounce["@id"]) < 0) {
-            console.log('checkDataShape as:Announce FAIL');
-            return false;
-          }
-          else if(typeof s.asobject == 'undefined') {
-            console.log('checkDataShape s.asobject FAIL: ' + s.asobject);
-            return false;
-          }
-          else if((typeof s.asupdated == 'undefined')){
-            console.log('checkDataShape s.asupdated FAIL: ' + s.asupdated);
-            return false;
-          }
-          else if(typeof s.schemalicense == 'undefined' && s.schema.license !== 'https://creativecommons.org/publicdomain/zero/1.0/') {
-            console.log('checkDataShape s.schemalicense FAIL: ' + s.schemalicense);
-            return false;
-          }
-          else {
-            var asupdated = s.graph().filter(function(t) {
-              ///FIXME: This t.object.datatype == rdf:langString is an exception due to a bug in rdf-parser-rdfa / green-turtle perhaps.
-              return (t.predicate.nominalValue == vocab.asupdated && t.object.datatype && (t.object.datatype.nominalValue == 'http://www.w3.org/2001/XMLSchema#dateTime' || (acceptRDFaTypes.indexOf(mediaType) > -1 && t.object.datatype == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString'))) ? true : false;
+      if(basePath == './' + options.checkDataShape[i].uri) {
+        switch(options.checkDataShape[i].uri) {
+          case 'inbox/linkedresearch.org/cloud/':
+            var types = s.rdftype;
+            var resourceTypes = [];
+            types.forEach(function(type){
+              resourceTypes.push(type.toString());
             });
-            if(asupdated.length == 0) {
-              console.log('checkDataShape s.asupdated FAIL: no xsd:dateTime');
+
+            if(resourceTypes.indexOf(vocab.asannounce["@id"]) < 0) {
+              console.log('checkDataShape as:Announce FAIL');
+              return false;
+            }
+            else if(typeof s.asobject == 'undefined') {
+              console.log('checkDataShape s.asobject FAIL: ' + s.asobject);
+              return false;
+            }
+            else if((typeof s.asupdated == 'undefined')){
+              console.log('checkDataShape s.asupdated FAIL: ' + s.asupdated);
+              return false;
+            }
+            else if(typeof s.schemalicense == 'undefined' && s.schema.license !== 'https://creativecommons.org/publicdomain/zero/1.0/') {
+              console.log('checkDataShape s.schemalicense FAIL: ' + s.schemalicense);
               return false;
             }
             else {
-              //XXX: We probably shouldn't be doing this regex here. Isn't there a lowerlevel method for it?
-              var regexp = /-?(?:[1-9][0-9][0-9][0-9]|0[1-9][0-9][0-9]|00[1-9][0-9]|000[1-9])-[0-9][0-9]-[0-9][0-9]T(?:[0-1][0-9]|2[0-4]):[0-5][0-9]:[0-5][0-9](?:\.[0-9]+)?(?:Z|[+\-][0-9][0-9]:[0-9][0-9])?/
-              var re = new RegExp(regexp).exec(asupdated);
-
-              if(re === null) {
-                console.log('checkDataShape s.asupdated FAIL: invalid xsd:dateTime ' + asupdated);
+              var asupdated = s.graph().filter(function(t) {
+                ///FIXME: This t.object.datatype == rdf:langString is an exception due to a bug in rdf-parser-rdfa / green-turtle perhaps.
+                return (t.predicate.nominalValue == vocab.asupdated && t.object.datatype && (t.object.datatype.nominalValue == 'http://www.w3.org/2001/XMLSchema#dateTime' || (acceptRDFaTypes.indexOf(mediaType) > -1 && t.object.datatype == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#langString'))) ? true : false;
+              });
+              if(asupdated.length == 0) {
+                console.log('checkDataShape s.asupdated FAIL: no xsd:dateTime');
                 return false;
               }
-            }
-          }
-          break;
+              else {
+                //XXX: We probably shouldn't be doing this regex here. Isn't there a lowerlevel method for it?
+                var regexp = /-?(?:[1-9][0-9][0-9][0-9]|0[1-9][0-9][0-9]|00[1-9][0-9]|000[1-9])-[0-9][0-9]-[0-9][0-9]T(?:[0-1][0-9]|2[0-4]):[0-5][0-9]:[0-5][0-9](?:\.[0-9]+)?(?:Z|[+\-][0-9][0-9]:[0-9][0-9])?/
+                var re = new RegExp(regexp).exec(asupdated);
 
-        default:
-          break;
+                if(re === null) {
+                  console.log('checkDataShape s.asupdated FAIL: invalid xsd:dateTime ' + asupdated);
+                  return false;
+                }
+              }
+            }
+            break;
+
+          default:
+            break;
+        }
       }
     }
 
