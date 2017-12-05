@@ -14,6 +14,11 @@ authenication/authorisation yet.
 
 Dive into [issues](https://github.com/csarven/mayktso/issues) because it is fun.
 
+## Installation
+```shell
+$ git clone https://github.com/csarven/mayktso ; cd mayktso ; npm install
+```
+
 ## Receiver
 Server runs on http://localhost:3000/ by default:
 
