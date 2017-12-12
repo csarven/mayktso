@@ -50,10 +50,12 @@ var contentType = require('content-type');
 var bodyParser = require('body-parser');
 var mime = require('mime');
 
-var acceptRDFTypes = ['application/ld+json', 'text/turtle', 'application/xhtml+xml', 'text/html'];
+var acceptRDFTypes = ['application/ld+json', 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"', 'text/turtle', 'application/xhtml+xml', 'text/html'];
 var acceptRDFaTypes = ['application/xhtml+xml', 'text/html'];
 var acceptNonRDFTypes = ['text/css', 'application/javascript', 'image/svg+xml'];
 var acceptNonRDFBinaryTypes = ['image/png', 'image/jpeg', 'image/gif'];
+
+var acceptProfiles = ['https://www.w3.org/ns/activitystreams'];
 
 var mayktsoURI = 'https://github.com/csarven/mayktso';
 
@@ -289,6 +291,10 @@ console.log(config);
     app.use(function(req, res, next) {
 //      module.exports.accept = accept = accepts(req);
       req.requestedType = req.accepts(acceptRDFTypes);
+// console.log(req.requestedType);
+      req.requestedType = (req.requestedType) ? req.requestedType.split(';')[0].trim() : req.requestedType;
+// console.log(req.requestedType);
+
       var qPosition = req.originalUrl.indexOf('?');
       req.requestedPath = (qPosition > -1) ? config.rootPath + req.originalUrl.substr(0, qPosition) : config.rootPath + req.originalUrl;
 
@@ -299,7 +305,6 @@ console.log(config);
       console.log(JSON.stringify(req.headers));
       // console.log('req.protocol: ' + req.protocol);
       // console.log('accept.types(): ' + accept.types());
-      // console.log('requestedType: ' + requestedType);
       // console.log(req.body);
       // console.log(req.rawBody);
       // console.log('req.baseUrl: ' + req.baseUrl);
@@ -924,7 +929,7 @@ function handleResource(req, res, next, options){
   }
 
   var requestedPathMimeType = mime.lookup(req.requestedPath);
-
+// console.log(req.requestedType)
 // console.log(requestedPathMimeType);
 // console.log(req.accepts(requestedPathMimeType));
 // console.log(req.accepts(acceptRDFTypes));
@@ -1085,32 +1090,54 @@ function handleResource(req, res, next, options){
           console.log("Can't readdir: " + req.requestedPath); //throw err;
         }
         var baseURL = req.getUrl().endsWith('/') ? req.getUrl() : req.getUrl() + '/';
+
         var profile = 'http://www.w3.org/ns/json-ld#expanded';
-        var data, nsLDP = '';
         if(typeof options !== 'undefined' && 'jsonld' in options && 'profile' in options.jsonld){
           switch(options.jsonld.profile){
             default:
               profile = 'http://www.w3.org/ns/json-ld#expanded';
-              nsLDP = 'http://www.w3.org/ns/ldp#';
               break;
             case 'http://www.w3.org/ns/json-ld#compacted':
               profile = 'http://www.w3.org/ns/json-ld#compacted';
               break;
+            case 'https://www.w3.org/ns/activitystreams':
+              profile = 'https://www.w3.org/ns/activitystreams';
+              break;
           }
+        }
+
+        //XXX: Super lazy to look up
+        if (req.headers['accept'].indexOf('profile="https://www.w3.org/ns/activitystreams"') > -1
+          || req.headers['accept'].indexOf("profile='https://www.w3.org/ns/activitystreams'") > -1
+          || req.headers['accept'].indexOf('profile=https://www.w3.org/ns/activitystreams') > -1) {
+          profile = 'https://www.w3.org/ns/activitystreams';
         }
 
         var contains = [];
         for (var i = 0; i < files.length; i++) {
           var file = files[i];
 
-          var resourceTypes = [ nsLDP + 'Resource', nsLDP + 'RDFSource'];
+          var resourceTypes = [];
           try {
             var f = fs.statSync(req.requestedPath + file);
 
             if(f.isDirectory()){
-              resourceTypes.push(nsLDP + 'Container');
-              resourceTypes.push(nsLDP + 'BasicContainer');
+              if(profile == 'https://www.w3.org/ns/activitystreams') {
+                resourceTypes = [prefixes['as'] + 'Collection'];
+              }
+              else {
+                resourceTypes = [prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource', prefixes['ldp'] + 'Container', prefixes['ldp'] + 'BasicContainer'];
+              }
+
               file = file + '/';
+            }
+            else {
+              if(profile == 'https://www.w3.org/ns/activitystreams') {
+                resourceTypes = [prefixes['as'] + 'Object'];
+              }
+              else {
+                resourceTypes = [prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource'];
+              }
             }
           }catch(e){ }
 
@@ -1120,17 +1147,32 @@ function handleResource(req, res, next, options){
           });
         }
 
+
         var data = {};
-        if(profile == 'http://www.w3.org/ns/json-ld#compacted'){
+
+        if(profile == 'https://www.w3.org/ns/activitystreams') {
+          data["@context"] = 'https://www.w3.org/ns/activitystreams';
+        }
+        else if(profile == 'http://www.w3.org/ns/json-ld#compacted'){
           data["@context"] = 'http://www.w3.org/ns/ldp';
         }
-        data = Object.assign(data, {
-          "@id": baseURL,
-          "@type": [ nsLDP+'Resource', nsLDP+'RDFSource', nsLDP+'Container', nsLDP+'BasicContainer' ]
-        });
+
+        data['@id'] = baseURL;
+
+
+        var includeProperty = prefixes['ldp'] + 'contains';
+
+        var types = [ prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource', prefixes['ldp'] + 'Container', prefixes['ldp'] + 'BasicContainer' ];
+
+        if (profile == 'https://www.w3.org/ns/activitystreams') {
+          includeProperty = prefixes['as'] + 'items';
+          types = [prefixes['as'] + 'Collection'];
+        }
+
+        data["@type"] = types;
 
         if(contains.length > 0) {
-          data[nsLDP+'contains'] = contains;
+          data[includeProperty] = contains;
         }
 
         if(profile == 'http://www.w3.org/ns/json-ld#expanded'){
@@ -1176,8 +1218,10 @@ function handleResource(req, res, next, options){
               parameterProfile = ';profile="'+profile+'"';
             }
 
+            console.log(data)
+            // console.log(res)
             res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type", <http://www.w3.org/ns/ldp#Container>; rel="type", <http://www.w3.org/ns/ldp#BasicContainer>; rel="type"');
-            res.set('Content-Type', req.requestedType + ';charset=utf-8' + parameterProfile);
+            res.set('Content-Type', req.requestedType + parameterProfile + ';charset=utf-8');
             res.set('Content-Length', Buffer.byteLength(data, 'utf-8'));
             res.set('ETag', etag(data));
             res.set('Last-Modified', stats.mtime);
@@ -1630,7 +1674,8 @@ function getGraphFromData(data, options) {
     options['subjectURI'] = '_:dokieli';
   }
   if(acceptRDFTypes.indexOf(options['contentType']) > -1) {
-    return SimpleRDF.parse(data, options['contentType'], options['subjectURI']);
+    var mediaType = options['contentType'].split(';')[0].trim();
+    return SimpleRDF.parse(data, mediaType, options['subjectURI']);
   }
   else {
     return Promise.reject({'status': '415'});
