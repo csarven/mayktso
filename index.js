@@ -1089,6 +1089,7 @@ function handleResource(req, res, next, options){
         if(error) {
           console.log("Can't readdir: " + req.requestedPath); //throw err;
         }
+
         var baseURL = req.getUrl().endsWith('/') ? req.getUrl() : req.getUrl() + '/';
 
         var profile = 'http://www.w3.org/ns/json-ld#expanded';
@@ -1102,6 +1103,16 @@ function handleResource(req, res, next, options){
               break;
             case 'https://www.w3.org/ns/activitystreams':
               profile = 'https://www.w3.org/ns/activitystreams';
+              files
+                .map(function(v) {
+                  return {
+                    name: v,
+                    time: fs.statSync(req.requestedPath + v).ctime.getTime()
+                  };
+                })
+                .sort(function(a, b) { return a.time - b.time; })
+                .reverse()
+                .map(function(v) { return v.name; });
               break;
           }
         }
@@ -1133,7 +1144,7 @@ function handleResource(req, res, next, options){
             }
             else {
               if(profile == 'https://www.w3.org/ns/activitystreams') {
-                resourceTypes = [prefixes['as'] + 'Object'];
+                resourceTypes = [prefixes['as'] + 'Create'];
               }
               else {
                 resourceTypes = [prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource'];
@@ -1366,7 +1377,7 @@ function postContainer(req, res, next, options){
 // console.log(s);
                 var validDataShape = checkDataShape(s, mediaType, basePath, config);
 // console.log(validDataShape);
-console.log(basePath);
+// console.log(basePath);
                 if(validDataShape && g._graph.length > 0) {
                   gcDirectory(basePath);
                   //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
