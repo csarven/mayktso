@@ -1333,7 +1333,7 @@ function postContainer(req, res, next, options){
       fileName = lastPath;
       pathWriteable = true;
     }
-    else if(req.headers['slug'] && req.headers['slug'].length > 0 && !req.headers['slug'].match(/\/?\.\.+\/?/g) && !fs.existsSync(req.requestedPath + req.headers['slug'])) {
+    else if(req.headers['slug'] && req.headers['slug'].length > 0 && !req.headers['slug'].match(/\/?\.\.+\/?/g) && !fs.existsSync(req.requestedPath + req.headers['slug']) && isWritable(req.requestedPath)) {
       fileName = req.headers['slug'];
       pathWriteable = true;
     }
@@ -1342,9 +1342,16 @@ function postContainer(req, res, next, options){
       fileName = req.query.id;
       pathWriteable = true;
     }
-    else {
+    else if(isWritable(req.requestedPath)) {
       fileName = uuid.v1();
       pathWriteable = true;
+    }
+
+    if (!pathWriteable) {
+      res.status(403);
+      res.set('Allow', 'GET, HEAD, OPTIONS');
+      res.end();
+      return;
     }
 
     file = basePath + fileName + options.fileNameSuffix;
