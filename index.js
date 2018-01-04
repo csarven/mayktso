@@ -1118,9 +1118,9 @@ function handleResource(req, res, next, options){
         }
 
         //XXX: Super lazy to look up
-        if (req.headers['accept'].indexOf('profile="https://www.w3.org/ns/activitystreams"') > -1
+        if (req.headers['accept'] && (req.headers['accept'].indexOf('profile="https://www.w3.org/ns/activitystreams"') > -1
           || req.headers['accept'].indexOf("profile='https://www.w3.org/ns/activitystreams'") > -1
-          || req.headers['accept'].indexOf('profile=https://www.w3.org/ns/activitystreams') > -1) {
+          || req.headers['accept'].indexOf('profile=https://www.w3.org/ns/activitystreams') > -1)) {
           profile = 'https://www.w3.org/ns/activitystreams';
         }
 
@@ -1229,7 +1229,6 @@ function handleResource(req, res, next, options){
               parameterProfile = ';profile="'+profile+'"';
             }
 
-            console.log(data)
             // console.log(res)
             res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type", <http://www.w3.org/ns/ldp#Container>; rel="type", <http://www.w3.org/ns/ldp#BasicContainer>; rel="type"');
             res.set('Content-Type', req.requestedType + parameterProfile + ';charset=utf-8');
