@@ -8,10 +8,10 @@ Content negotiation with `text/turtle`, `application/ld+json`, `text/html`,
 `application/xhtml+xml`. It can serialize from HTML+RDFa, but does not serialize
 to HTML+RDFa.
 * Spec coverage:
-** Tested: Conforming [Linked Data Notifications](https://www.w3.org/TR/ldn/) sender, receiver, sender.
-** Untested: [Linked Data Platform](https://www.w3.org/TR/ldp/) - probably does most things, and only BasicContainer.
-** Totally untested and probably only small parts: [Web Annotation Protocol](https://www.w3.org/TR/annotation-protocol/)
-** Basic implementation of the the [ActiviyPub](https://www.w3.org/TR/activitypub/) Outbox mechanism.
+  * Tested: Conforming [Linked Data Notifications](https://www.w3.org/TR/ldn/) sender, receiver, sender.
+  * Untested: [Linked Data Platform](https://www.w3.org/TR/ldp/) - probably does most things, and only BasicContainer.
+  * Totally untested and probably only small parts: [Web Annotation Protocol](https://www.w3.org/TR/annotation-protocol/)
+  * Basic implementation of the the [ActiviyPub](https://www.w3.org/TR/activitypub/) Outbox mechanism.
 * No authenication/authorisation mechanism
 * Basic configuration to set constraints on a directory (size/max)
 * Basic configuration to handle stuff like https://linkedresearch.org/cloud
