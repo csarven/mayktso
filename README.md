@@ -16,13 +16,15 @@ to HTML+RDFa.
 * Basic configuration to set constraints on a directory (size/max)
 * Basic configuration to handle stuff like https://linkedresearch.org/cloud
 
-This server was initially built for LDN but then decided to support/test [dokieli](https://dokie.li/)'s needs (source: https://github.com/linkeddata/dokieli).
+This server was initially built for LDN tests but then decided to support/test [dokieli](https://dokie.li/)'s needs (source: https://github.com/linkeddata/dokieli) and do LDP etc.
 
 Dive into [issues](https://github.com/csarven/mayktso/issues) because it is fun.
 
 ## Installation
 ```shell
-$ git clone https://github.com/csarven/mayktso ; cd mayktso ; npm install
+$ git clone https://github.com/csarven/mayktso
+$ cd mayktso
+$ npm install
 ```
 
 ## Receiver
