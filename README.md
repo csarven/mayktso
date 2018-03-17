@@ -2,15 +2,21 @@
 Encounters at an endpoint.
 
 ## About
-* Preliminary HTTP server and command-line RDF tool to get/send, serialise data.
+* HTTP server and command-line RDF tool to get/send, serialise data.
 * Server can receive HTTP `HEAD`, `OPTIONS`, `GET`, `POST`, `PUT` requests.
 Content negotiation with `text/turtle`, `application/ld+json`, `text/html`,
-`application/xhtml+xml`. Serializes from HTML+RDFa, but does not serialize to
-HTML+RDFa.
-* Conforming
-[Linked Data Notifications](https://www.w3.org/TR/ldn/) sender, receiver, sender.
-* The server speaks a little bit of LDP. It doesn't do
-authenication/authorisation yet.
+`application/xhtml+xml`. It can serialize from HTML+RDFa, but does not serialize
+to HTML+RDFa.
+* Spec coverage:
+** Tested: Conforming [Linked Data Notifications](https://www.w3.org/TR/ldn/) sender, receiver, sender.
+** Untested: [Linked Data Platform](https://www.w3.org/TR/ldp/) - probably does most things, and only BasicContainer.
+** Totally untested and probably only small parts: [Web Annotation Protocol](https://www.w3.org/TR/annotation-protocol/)
+** Basic implementation of the the [ActiviyPub](https://www.w3.org/TR/activitypub/) Outbox mechanism.
+* No authenication/authorisation mechanism
+* Basic configuration to set constraints on a directory (size/max)
+* Basic configuration to handle stuff like https://linkedresearch.org/cloud
+
+This server was initially built for LDN but then decided to support/test [dokieli](https://dokie.li/)'s needs (source: https://github.com/linkeddata/dokieli).
 
 Dive into [issues](https://github.com/csarven/mayktso/issues) because it is fun.
 
@@ -39,7 +45,7 @@ Optional config use: `cp config.json.default config.json`
   "inboxPath": "inbox/",
   "queuePath": "queue/",
   "maxPayloadSize": 100000,
-  "maxResourceCount": 10
+  "maxResourceCount": 10,
 }
 ```
 
@@ -57,13 +63,18 @@ e.g., `basePath: "/foo/bar/"`
 
 * `inboxPath` and `queuePath` are relative to root e.g.,
 http://localhost:3000/{inbox,queue}/
-* queue is used for HTTP 202 responses (default for payload above maxPayloadSize in bytes).
-Status: Testing
+* queue is used for HTTP 202 responses (default for payload above maxPayloadSize
+in bytes). Status: Testing
 * `rootPath` defaults to the current directory (`.`) or a full path can be
 specified. Requests are relative to this location.
 * `maxPayloadSize` is for POSTs (as the name suggests)
 * `maxResourceCount` is for number of notifications to keep in inbox/ or queue
 
+
+* Simple data shape check that's based off https://linkedresearch.org/cloud 's
+needs. It is triggered by having a line like this
+`"checkDataShape": [ { "uri": "inbox/linkedresearch.org/cloud/" } ]`. This needs
+to be better documented and built further.
 
 ## Sender and Consumer
 
@@ -159,14 +170,13 @@ mayktso as a receiver for your Inbox)
 * Compliments [dokieli](https://github.com/linkeddata/dokieli)
 
 ## Contributors
-* [Sarven Capadisli](https://github.com/csarven)
 * [Amy Guy](https://github.com/rhiaro)
 * [Benjamin Young](https://github.com/BigBlueHat)
-* [Ruben Taelman](https://github.com/rubensworks)
-* Your name here. See below :)
-
-## Acknowledgements
 * [Dmitri Zagidulin](https://github.com/dmitrizagidulin)
+* [Ruben Taelman](https://github.com/rubensworks)
+* [Sarven Capadisli](https://github.com/csarven) (maintainer)
+* Your name here. :)
+
 
 ## How to contribute
 * Use it! Break things.
