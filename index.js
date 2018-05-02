@@ -412,7 +412,7 @@ function help() {
   console.log('    --slug string');
   console.log('    -d, --data <data>');
   console.log('    -o, --outputType (m, default: application/ld+json)');
-  console.log('    m: mimetype or format; jsonld, turtle');
+  console.log('    m: mimetype or format; jsonld, rdfa, n3, turtle, ntriples');
 }
 
 
@@ -1676,6 +1676,8 @@ function formatToMimeType(format){
       return 'text/n3';
     case 'ntriples':
       return 'application/n-triples';
+    case 'rdfa':
+      return 'text/html';
     default:
       return format;
   }
