@@ -214,6 +214,7 @@ mayktso as a receiver for your Inbox)
 * [Dmitri Zagidulin](https://github.com/dmitrizagidulin)
 * [Ruben Taelman](https://github.com/rubensworks)
 * [Sarven Capadisli](https://github.com/csarven) (maintainer)
+* [Stian Soiland-Reyes](https://orcid.org/0000-0001-9842-9718)
 * Your name here. :)
 
 
