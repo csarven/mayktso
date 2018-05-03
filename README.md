@@ -1,6 +1,11 @@
 # mayktso
 Encounters at an endpoint.
 
+
+[![Docker Automated build](https://img.shields.io/docker/automated/csarven/mayktso.svg)](https://hub.docker.com/r/csarven/mayktso/builds/)
+[![Docker Build Status](https://img.shields.io/docker/build/jrottenberg/ffmpeg.svg)](https://hub.docker.com/r/csarven/mayktso/)
+[![](https://images.microbadger.com/badges/image/csarven/mayktso.svg)](https://microbadger.com/images/csarven/mayktso "Docker layers of csarven/mayktso")
+
 ## About
 * HTTP server and command-line RDF tool to get/send, serialise data.
 * Server can receive HTTP `HEAD`, `OPTIONS`, `GET`, `POST`, `PUT` requests.
@@ -20,12 +25,42 @@ This server was initially built for LDN tests but then decided to support/test [
 
 Dive into [issues](https://github.com/csarven/mayktso/issues) because it is fun.
 
-## Installation
+
+## Docker
+
+
+If you use [Docker](https://www.docker.com/), try the image [csarven/mayktso](https://hub.docker.com/r/csarven/mayktso/builds/):
+
+```shell
+docker run -p 3000:3000 -d csarven/mayktso
+```
+### Persistent Docker container
+
+```shell
+docker volume create mayktso-data
+docker run --name mayktso --restart=always \
+  --mount source=mayktso-data,target=/mayktso \
+  -p 3000:3000 \
+  -d csarven/mayktso
+```
+
+To update:
+
+```
+docker pull csarven/mayktso
+docker stop mayktso
+docker rm mayktso
+```
+
+.. then recreate using the `docker run` from above.
+
+## Installation from source
 ```shell
 $ git clone https://github.com/csarven/mayktso
 $ cd mayktso
 $ npm install
 ```
+
 
 ## Receiver
 Server runs on http://localhost:3000/ by default:
