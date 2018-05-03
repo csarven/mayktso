@@ -163,6 +163,8 @@ http://localhost:3000/inbox/abc
 ## License
 [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
+See the files [LICENSE](LICENSE) and [NOTICE](NOTICE) for required notices.
+
 ## See also
 * mayktso is based on [Linked Data Platform](https://www.w3.org/TR/ldp/)
 mechanisms
