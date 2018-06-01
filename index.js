@@ -682,7 +682,7 @@ function postResourceArgv(url){
         console.log('HTTP/1.1 ' + response.xhr.status + ' ' + response.xhr.statusText);
         console.log(response.xhr.getAllResponseHeaders());
         console.log('');
-        if(response.xhr.responseText.lenth > 0){
+        if(response.xhr.responseText.length > 0){
           console.log(response.xhr.responseText);
         }
       },
