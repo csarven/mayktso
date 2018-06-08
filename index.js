@@ -194,6 +194,7 @@ function config(configFile){
   config['reportsPath'] = config.reportsPath || 'reports/';
   config['maxPayloadSize'] = config.maxPayloadSize || 100000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
+  config['maxMemberCount'] = config.maxMemberCount || 10;
   config['proxyPath'] = config.proxyPath || '/proxy';
 
   var createDirectories = [config['inboxPath'], config['queuePath'], config['annotationPath'], config['reportsPath']];
@@ -1103,7 +1104,8 @@ function handleResource(req, res, next, options){
           console.log("Can't readdir: " + req.requestedPath); //throw err;
         }
 
-        var baseURL = req.getUrl().endsWith('/') ? req.getUrl() : req.getUrl() + '/';
+        var baseURL = getBaseURL(req.getUrl());
+        baseURL = baseURL.endsWith('/') ? baseURL : baseURL + '/';
 
         var profile = 'http://www.w3.org/ns/json-ld#expanded';
         if(typeof options !== 'undefined' && 'jsonld' in options && 'profile' in options.jsonld){
@@ -1137,40 +1139,6 @@ function handleResource(req, res, next, options){
           profile = 'https://www.w3.org/ns/activitystreams';
         }
 
-        var contains = [];
-        for (var i = 0; i < files.length; i++) {
-          var file = files[i];
-
-          var resourceTypes = [];
-          try {
-            var f = fs.statSync(req.requestedPath + file);
-
-            if(f.isDirectory()){
-              if(profile == 'https://www.w3.org/ns/activitystreams') {
-                resourceTypes = [prefixes['as'] + 'Collection'];
-              }
-              else {
-                resourceTypes = [prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource', prefixes['ldp'] + 'Container', prefixes['ldp'] + 'BasicContainer'];
-              }
-
-              file = file + '/';
-            }
-            else {
-              if(profile == 'https://www.w3.org/ns/activitystreams') {
-                resourceTypes = [prefixes['as'] + 'Create'];
-              }
-              else {
-                resourceTypes = [prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource'];
-              }
-            }
-          }catch(e){ }
-
-          contains.push({
-            "@id": baseURL + file,
-            "@type": resourceTypes
-          });
-        }
-
 
         var data = {};
 
@@ -1181,23 +1149,161 @@ function handleResource(req, res, next, options){
           data["@context"] = 'http://www.w3.org/ns/ldp';
         }
 
-        data['@id'] = baseURL;
+
+        var basePath = getBaseURL(req.requestedPath);
+        var outputPaging = checkPaging(profile, basePath, config);
+
+        var getContains = function(files, startItem, endItem) {
+          var startItem = startItem || 0;
+          var endItem = endItem || files.length;
+
+          var contains = [];
+
+          for (var i = startItem; i < endItem; i++) {
+            var file = files[i];
+
+            var resourceTypes = [];
+
+            try {
+              var f = fs.statSync(req.requestedPath + file);
 
 
-        var includeProperty = prefixes['ldp'] + 'contains';
+              //TODO: Check if resource ldp:RDFSource or ldp:NonRDFSource
 
-        var types = [ prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource', prefixes['ldp'] + 'Container', prefixes['ldp'] + 'BasicContainer' ];
+              if(f.isDirectory()){
+                if(profile == 'https://www.w3.org/ns/activitystreams') {
+                  resourceTypes = [prefixes['as'] + 'Collection'];
+                }
+                else {
+                  resourceTypes = [prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'Container', prefixes['ldp'] + 'BasicContainer'];
+                }
 
-        if (profile == 'https://www.w3.org/ns/activitystreams') {
-          includeProperty = prefixes['as'] + 'items';
-          types = [prefixes['as'] + 'Collection'];
+                file = file + '/';
+              }
+              else {
+                if(profile == 'https://www.w3.org/ns/activitystreams') {
+                  resourceTypes = [prefixes['as'] + 'Create'];
+                }
+                else {
+                  resourceTypes = [prefixes['ldp'] + 'Resource'];
+                }
+              }
+            }catch(e){ }
+
+            contains.push({
+              "@id": baseURL + file,
+              "@type": resourceTypes
+            });
+          }
+
+          return contains;
         }
 
-        data["@type"] = types;
 
-        if(contains.length > 0) {
-          data[includeProperty] = contains;
+        if (outputPaging) {
+          var applyCollectionPage = ('p' in req.query && req.query.p.length > 0 && typeof parseInt(req.query.p) == 'number') ? true : false
+
+          var totalPages = Math.ceil(files.length / config.maxMemberCount);
+          totalPages =  (totalPages < 1) ? 1 : totalPages;
+
+          var first = { '@id': baseURL + '?p=1' }
+
+          var last = { '@id': baseURL + '?p=' + totalPages }
+
+          var includeProperty = prefixes['ldp'] + 'contains';
+
+
+          if (applyCollectionPage) {
+            var p = parseInt(req.query.p);
+
+            if (p < 1 || p > totalPages) {
+              res.status(404);
+              res.end();
+              // storeMeta(req, res, next, Object.assign(options, { "file": file }));
+              return next();
+            }
+
+            var types = [ prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource' ];
+
+            if (profile == 'https://www.w3.org/ns/activitystreams') {
+              includeProperty = prefixes['as'] + 'items';
+              types = [prefixes['as'] + 'CollectionPage'];
+            }
+
+            data['@id'] = req.getUrl();
+            data['@type'] = types;
+
+            data[prefixes['as'] + 'partOf'] = {
+              '@id': baseURL
+            }
+
+            if (p > 1) {
+              data[prefixes['as'] + 'prev'] = { '@id': baseURL + '?p=' + (p-1) }
+            }
+
+            if (p + 1 <= totalPages) {
+              data[prefixes['as'] + 'next'] = { '@id': baseURL + '?p=' + (p+1) }
+            }
+
+            var startItem = (p == 1) ? 0 : (p - 1) * config.maxMemberCount;
+            var endItem = startItem + config.maxMemberCount;
+            endItem = (files.length <= endItem) ? files.length : endItem;
+
+            data[prefixes['as'] + 'first'] = first
+            data[prefixes['as'] + 'last'] = last
+
+            var contains = getContains(files, startItem, endItem);
+
+            if(contains.length > 0) {
+              data[includeProperty] = contains;
+            }
+          }
+          else {
+            data['@id'] = baseURL;
+  
+            var types = [ prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource', prefixes['ldp'] + 'Container', prefixes['ldp'] + 'BasicContainer' ];
+
+            if (profile == 'https://www.w3.org/ns/activitystreams') {
+              includeProperty = prefixes['as'] + 'items';
+              types = [prefixes['as'] + 'Collection'];
+            }
+
+            data['@type'] = types;
+
+            data[prefixes['as'] + 'totalItems'] = files.length;
+
+            data[prefixes['as'] + 'first'] = first
+            data[prefixes['as'] + 'last'] = last
+
+            var contains = getContains(files);
+
+            if(contains.length > 0) {
+              data[includeProperty] = contains;
+            }
+          }
         }
+        else {
+          data['@id'] = baseURL;
+
+          var contains = getContains(files);
+
+          var includeProperty = prefixes['ldp'] + 'contains';
+
+          var types = [ prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource', prefixes['ldp'] + 'Container', prefixes['ldp'] + 'BasicContainer' ];
+
+          if (profile == 'https://www.w3.org/ns/activitystreams') {
+            includeProperty = prefixes['as'] + 'items';
+            types = [prefixes['as'] + 'Collection'];
+          }
+
+          data['@type'] = types;
+
+          if(contains.length > 0) {
+            data[includeProperty] = contains;
+          }
+        }
+
+
 
         if(profile == 'http://www.w3.org/ns/json-ld#expanded'){
           data = [data];
@@ -1487,6 +1593,20 @@ function postContainer(req, res, next, options){
     storeMeta(req, res, next, Object.assign(options, { "file": file }));
     return;
   }
+}
+
+function checkPaging(profile, basePath, options){
+  if (typeof profile !== 'undefined' && typeof basePath !== 'undefined' && typeof options !== 'undefined' &&
+     'checkPaging' in options && options.checkPaging && options.checkPaging.length > 0){
+
+    for (var i = 0; i < options.checkPaging.length; i++) {
+      if(basePath == './' + options.checkPaging[i].uri) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 function checkDataShape(s, mediaType, basePath, options){

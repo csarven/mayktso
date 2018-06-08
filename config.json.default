@@ -9,5 +9,6 @@
   "queuePath": "queue/",
   "annotationPath": "annotation/",
   "maxPayloadSize": 10000,
-  "maxResourceCount": 10
+  "maxResourceCount": 10,
+  "maxMemberCount": 10
 }
