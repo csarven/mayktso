@@ -1274,12 +1274,6 @@ function handleResource(req, res, next, options){
 
             data[prefixes['as'] + 'first'] = first
             data[prefixes['as'] + 'last'] = last
-
-            var contains = getContains(files);
-
-            if(contains.length > 0) {
-              data[includeProperty] = contains;
-            }
           }
         }
         else {
