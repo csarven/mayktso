@@ -1820,7 +1820,7 @@ function formatToMimeType(format){
   }
 }
 
-//From https://github.com/linkeddata/dokieli/scripts/do.js
+//From https://github.com/linkeddata/dokieli/scripts/dokieli.js
 function getGraphFromData(data, options) {
   options = options || {};
   if (!('contentType' in options)) {
