@@ -62,6 +62,7 @@ var XMLHttpRequest = require('xhr2');
 var contentType = require('content-type');
 var bodyParser = require('body-parser');
 var mime = require('mime');
+var EventEmitter = require('events');
 
 var acceptRDFTypes = ['application/ld+json', 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"', 'text/turtle', 'application/xhtml+xml', 'text/html'];
 var acceptRDFaTypes = ['application/xhtml+xml', 'text/html'];
@@ -146,6 +147,8 @@ var prefixesRDFa = Object.keys(prefixes).map(function(i){ return i + ': ' + pref
 
 var argv;
 var app = express();
+
+const eventEmitter = new MyEmitter();
 
 // app.use(compress());
 
@@ -372,6 +375,7 @@ console.log(config);
     console.log('curl -i ' + config.authority);
     console.log('');
   }
+  return eventEmitter;
 }
 
 
@@ -1510,6 +1514,7 @@ function postContainer(req, res, next, options){
                 if(validDataShape && g._graph.length > 0) {
                   gcDirectory(basePath);
                   //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
+                  eventEmitter.emit('notification', data, mediaType, 'utf-8');
                   fs.writeFile(file, data, function(x) {
                     // console.log(uri);
                     res.set('Location', uri);
@@ -1548,6 +1553,7 @@ function postContainer(req, res, next, options){
 // console.log(file + ' ' + encoding);
             gcDirectory(basePath);
             //XXX: At this point we assume that it is okay to overwrite. Should be only for ?id
+            eventEmitter.emit('notification', data, mediaType, encoding);
             fs.writeFile(file, data, encoding, function(x) {
               res.set('Location', uri);
               res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#NonRDFSource>; rel="type"');
