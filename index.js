@@ -148,7 +148,7 @@ var prefixesRDFa = Object.keys(prefixes).map(function(i){ return i + ': ' + pref
 var argv;
 var app = express();
 
-const eventEmitter = new MyEmitter();
+const eventEmitter = new EventEmitter();
 
 // app.use(compress());
 
