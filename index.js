@@ -114,7 +114,7 @@ var prefixes = {
   "skos": "http://www.w3.org/2004/02/skos/core#",
   "prov": "http://www.w3.org/ns/prov#",
   "qb": "http://purl.org/linked-data/cube#",
-  "schema": "https://schema.org/",
+  "schema": "http://schema.org/",
   "void": "http://rdfs.org/ns/void#",
   "rsa": "http://www.w3.org/ns/auth/rsa#",
   "cert": "http://www.w3.org/ns/auth/cert#",
@@ -878,7 +878,7 @@ function applyParserFixes(data, fromContentType, toContentType) {
 
       data = JSON.stringify(x) + '\n';
       break;
-  }        
+  }
 
   return data;
 }
@@ -1274,7 +1274,7 @@ function handleResource(req, res, next, options){
           }
           else {
             data['@id'] = baseURL;
-  
+
             var types = [ prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource', prefixes['ldp'] + 'Container', prefixes['ldp'] + 'BasicContainer' ];
 
             if (profile == 'https://www.w3.org/ns/activitystreams') {
