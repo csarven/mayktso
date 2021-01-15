@@ -846,9 +846,9 @@ function applyParserFixes(data, fromContentType, toContentType) {
   switch(toContentType) {
     case 'text/turtle':
       //XXX: Workaround for rdf-parser-rdfa bug that gives '@langauge' instead of @type when encountering datatype in HTML+RDFa . TODO: Link to bug here
-      data = data.replace(/Z"@en;/, 'Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;');
-      data = data.replace(/start> "(\d+)"@en;/, 'start> "$1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>;');
-      data = data.replace(/end> "(\d+)"@en;/, 'end> "$1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>;');
+      data = data.replace(/Z"@en;/g, 'Z"^^<http://www.w3.org/2001/XMLSchema#dateTime>;');
+      data = data.replace(/start> "(\d+)"@en;/g, 'start> "$1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>;');
+      data = data.replace(/end> "(\d+)"@en;/g, 'end> "$1"^^<http://www.w3.org/2001/XMLSchema#nonNegativeInteger>;');
       break;
 
     case 'application/ld+json':
