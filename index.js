@@ -794,6 +794,7 @@ function getTarget(req, res, next){
 
       var sendHeaders = function(outputData, contentType) {
         res.set('Link', '<' + inboxURL + '>; rel="http://www.w3.org/ns/ldp#inbox", <http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type"');
+        responseStorageOwners(req, res);
         res.set('Content-Type', contentType +';charset=utf-8');
         res.set('Content-Length', Buffer.byteLength(outputData, 'utf-8'));
         res.set('ETag', etag(outputData));
@@ -1366,16 +1367,7 @@ function handleResource(req, res, next, options){
               parameterProfile = ';profile="'+profile+'"';
             }
 
-            var rootURL = req.getRootUrl() + '/'
-            var requestedURL = req.getUrl()
-
-            if(rootURL === requestedURL) {
-              res.set('Link', '<http://www.w3.org/ns/pim/space#Storage>; rel="type"')
-
-              if(config.owners.length > 0) {
-                res.set('Link', req.linkHeaderFieldValueOwners)
-              }
-            }
+            responseStorageOwners(req, res);
 
             // console.log(res)
             res.set('Link', '<http://www.w3.org/ns/ldp#Resource>; rel="type", <http://www.w3.org/ns/ldp#RDFSource>; rel="type", <http://www.w3.org/ns/ldp#Container>; rel="type", <http://www.w3.org/ns/ldp#BasicContainer>; rel="type"');
@@ -1701,6 +1693,19 @@ function checkDataShape(s, mediaType, basePath, options){
   }
   else {
     return true;
+  }
+}
+
+function responseStorageOwners(req, res, next, options) {
+  var rootURL = req.getRootUrl() + '/'
+  var requestedURL = req.getUrl()
+
+  if(rootURL === requestedURL) {
+    res.append('Link', '<http://www.w3.org/ns/pim/space#Storage>; rel="type"')
+
+    if(config.owners.length > 0) {
+      res.append('Link', req.linkHeaderFieldValueOwners)
+    }
   }
 }
 
