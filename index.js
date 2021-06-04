@@ -806,7 +806,7 @@ function getTarget(req, res, next){
         sendHeaders(data, 'text/html');
         res.status(200);
         res.send(data);
-        return next();
+        res.end();
       }
       else {
         var options = { 'subjectURI': base };
@@ -836,11 +836,10 @@ function getTarget(req, res, next){
                 break;
               case 'OPTIONS':
                 res.status(204);
-                res.end();
                 break;
             }
 
-            return next();
+            res.end();
           },
           function(reason){
             res.status(500);
