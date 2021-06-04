@@ -199,6 +199,7 @@ function config(configFile){
   config['maxResourceCount'] = config.maxResourceCount || 100;
   config['maxMemberCount'] = config.maxMemberCount || 10;
   config['proxyPath'] = config.proxyPath || '/proxy';
+  config['owners'] = config.owners || '';
 
   var createDirectories = [config['inboxPath'], config['queuePath'], config['annotationPath'], config['reportsPath']];
   createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
@@ -315,6 +316,14 @@ console.log(config);
       var qPosition = req.originalUrl.indexOf('?');
       req.requestedPath = (qPosition > -1) ? config.rootPath + req.originalUrl.substr(0, qPosition) : config.rootPath + req.originalUrl;
 
+      if(config.owners.length > 0) {
+        var lHfV = [];
+        config.owners.forEach(function(i){
+           lHfV.push('<' + i + '>; rel="http://www.w3.org/ns/solid/terms#owner"');
+        });
+        req.linkHeaderFieldValueOwners = lHfV.join(', ');
+      }
+
       // console.log(req);
       // console.log(res);
 
@@ -329,6 +338,7 @@ console.log(config);
       // console.log('req.url: ' + req.url);
       // console.log('req.getUrl: ' + req.getUrl());
       // console.log('requestedPath: ' + req.requestedPath);
+      // console.log('linkHeaderFieldValueOwners: ' + req.linkHeaderFieldValueOwners)
       return next();
     });
 
@@ -1354,6 +1364,17 @@ function handleResource(req, res, next, options){
             parameterProfile = '';
             if(req.requestedType == 'application/ld+json') {
               parameterProfile = ';profile="'+profile+'"';
+            }
+
+            var rootURL = req.getRootUrl() + '/'
+            var requestedURL = req.getUrl()
+
+            if(rootURL === requestedURL) {
+              res.set('Link', '<http://www.w3.org/ns/pim/space#Storage>; rel="type"')
+
+              if(config.owners.length > 0) {
+                res.set('Link', req.linkHeaderFieldValueOwners)
+              }
             }
 
             // console.log(res)
