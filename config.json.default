@@ -2,12 +2,16 @@
   "port": "3000",
   "sslKey": "/path/to/privkey.pem",
   "sslCert": "/path/to/cert.pem",
+
   "proxyPath": "/proxy",
-  "rootPath": ".",
+  "rootPath": "www/",
   "basePath": "",
+
+  "annotationPath": "annotation/",
   "inboxPath": "inbox/",
   "queuePath": "queue/",
-  "annotationPath": "annotation/",
+  "reportsPath": "reports/",
+
   "maxPayloadSize": 10000,
   "maxResourceCount": 10,
   "maxMemberCount": 10

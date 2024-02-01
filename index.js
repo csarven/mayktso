@@ -181,6 +181,12 @@ function getConfigFile(configFile){
   return config;
 }
 
+function createDir(path) {
+  if (!fs.existsSync(path)) {
+    fs.mkdirSync(path);
+  }
+}
+
 function config(configFile){
   var config = getConfigFile(configFile);
 
@@ -189,20 +195,39 @@ function config(configFile){
   config['port'] = config.port || 3000;
   config['scheme'] = (config.sslKey && config.sslCert) ? 'https' : 'http';
   config['authority'] = config.scheme + '://' + config.hostname + ':' + config.port;
-  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() : '.');
+  config['rootPath'] = config.rootPath || ((process.cwd() != __dirname) ? process.cwd() + '/www/' : 'www/');
   config['basePath'] = config.basePath || '';
+
+  // pre-provided resource endpoints
+  config['annotationPath'] = config.annotationPath || 'annotation/';
   config['inboxPath'] = config.inboxPath || 'inbox/';
   config['queuePath'] = config.queuePath || 'queue/';
-  config['annotationPath'] = config.annotationPath || 'annotation/';
   config['reportsPath'] = config.reportsPath || 'reports/';
+
   config['maxPayloadSize'] = config.maxPayloadSize || 100000;
   config['maxResourceCount'] = config.maxResourceCount || 100;
   config['maxMemberCount'] = config.maxMemberCount || 10;
   config['proxyPath'] = config.proxyPath || '/proxy';
   config['owners'] = config.owners || '';
 
-  var createDirectories = [config['inboxPath'], config['queuePath'], config['annotationPath'], config['reportsPath']];
-  createDirectories.forEach(function(path){ if(!fs.existsSync(path)){ fs.mkdirSync(path); } });
+  // create the `rootPath` directory
+  createDir(config['rootPath']);
+  // ...all others are relative to `rootPath`
+  var createThese = [
+    config['annotationPath'], config['inboxPath'], config['queuePath'],
+    config['reportsPath']
+  ];
+  createThese.forEach(function(path) {
+    createDir(config['rootPath'] + path);
+  });
+
+  // rootPath folder does not contain an index.html file...so we'll copy the
+  // default one in.
+  if (!fs.existsSync(config.rootPath + 'index.html')
+      && fs.existsSync(process.cwd() + '/index.html')) {
+    fs.createReadStream(process.cwd() + '/index.html')
+      .pipe(fs.createWriteStream(config.rootPath + 'index.html'));
+  }
 
 //console.log(config);
   return config;
@@ -308,6 +333,7 @@ console.log(config);
 
     app.use(function(req, res, next) {
 //      module.exports.accept = accept = accepts(req);
+
       req.requestedType = req.accepts(acceptRDFTypes);
 // console.log(req.requestedType);
       req.requestedType = (req.requestedType) ? req.requestedType.split(';')[0].trim() : req.requestedType;
