@@ -894,6 +894,22 @@ function applyParserFixes(data, fromContentType, toContentType) {
 }
 
 
+function transformJsonldContextURLScheme(data) {
+  console.log(data)
+  if (typeof data["@context"] === "string") {
+    data["@context"] = data["@context"].replace(/^http:/, 'https:');
+  }
+  // else if (typeof data["@context"] === "object") {
+  //   for (var key in data["@context"]) {
+  //     if (data["@context"].hasOwnProperty(key) && typeof data["@context"][key] === "string") {
+  //       data["@context"][key] = data["@context"][key].replace(/^http:/, 'https:');
+  //     }
+  //   }
+  // }
+  return data;
+}
+
+
 function getSerialization(data, fromContentType, toContentType, serializeOptions, requestedType) {
 // console.log('- - -' + fromContentType + ' ' + toContentType + ' ' + requestedType)
   if(fromContentType == 'application/ld+json'){
