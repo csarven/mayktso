@@ -351,7 +351,7 @@ console.log(config);
             res.status(405);
             res.set('Allow', 'GET, HEAD, OPTIONS');
             res.end();
-            return next();
+            return;
             break;
         }
 
@@ -367,7 +367,7 @@ console.log(config);
           res.status(400);
           res.set('Allow', 'GET, HEAD, OPTIONS');
           res.end();
-          return next();
+          return;
         }
       });
     }
@@ -760,19 +760,19 @@ function getTarget(req, res, next){
       res.status(405);
       res.set('Allow', 'GET, HEAD, OPTIONS');
       res.end();
-      return next();
+      return;
       break;
   }
 
   if(!req.requestedType && !req.accepts(['text/html'])) {
     resStatus(res, 406);
-    return next();
+    return;
   }
 
   fs.stat(req.requestedPath, function(error, stats) {
     if (error) {
       res.status(404);
-      return next();
+      return;
     }
 
     fs.readFile(config.rootPath + '/index.html', 'utf8', function(error, data){
@@ -781,7 +781,7 @@ function getTarget(req, res, next){
       if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
         res.status(304);
         res.end();
-        return next();
+        return;
       }
 
       var fromContentType = 'text/html';
@@ -844,7 +844,7 @@ function getTarget(req, res, next){
           function(reason){
             res.status(500);
             res.end();
-            return next();
+            return;
           }
         );
       }
@@ -962,7 +962,7 @@ function handleResource(req, res, next, options){
       res.status(405);
       res.set('Allow', 'GET, HEAD, OPTIONS');
       res.end();
-      return next();
+      return;
       break;
   }
 
@@ -976,7 +976,7 @@ function handleResource(req, res, next, options){
 
   if(!req.accepts(requestedPathMimeType) && !req.requestedType){
     resStatus(res, 406);
-    return next();
+    return;
   }
 
   fs.stat(req.requestedPath, function(error, stats) {
@@ -1005,7 +1005,7 @@ function handleResource(req, res, next, options){
             if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
               res.status(304);
               res.end();
-              return next();
+              return;
             }
 
             if(req.requestedPath.startsWith(config.rootPath + '/' + config.queuePath)) {
@@ -1033,7 +1033,7 @@ function handleResource(req, res, next, options){
                       .map(function(e){return e.result;})
                       .indexOf('pass') < 0){
                     resStatus(res, 406);
-                    return next();
+                    return;
                   }
                   else {
                     var responseSent = false;
@@ -1049,7 +1049,7 @@ function handleResource(req, res, next, options){
                           }
                           else {
                             resStatus(res, 406);
-                            return next();
+                            return;
                           }
                         }
 
@@ -1074,7 +1074,7 @@ function handleResource(req, res, next, options){
                         }
 
                         res.end();
-                        return next();
+                        return;
                       }
                     });
                   }
@@ -1084,7 +1084,7 @@ function handleResource(req, res, next, options){
                   console.log(error);
                   res.status(500);
                   res.end();
-                  return next();
+                  return;
                 });
             }
 
@@ -1114,12 +1114,13 @@ function handleResource(req, res, next, options){
           }
 
           res.end();
-          return next();
+          return;
         }
       }
       else {
         res.status(403);
-        return next();
+        res.end();
+        return;
       }
     }
     else if(stats.isDirectory()) {
@@ -1244,7 +1245,7 @@ function handleResource(req, res, next, options){
               res.status(404);
               res.end();
               // storeMeta(req, res, next, Object.assign(options, { "file": file }));
-              return next();
+              return;
             }
 
             var types = [ prefixes['ldp'] + 'Resource', prefixes['ldp'] + 'RDFSource' ];
@@ -1358,7 +1359,7 @@ function handleResource(req, res, next, options){
             if (req.headers['if-none-match'] && (req.headers['if-none-match'] == etag(data))) {
               res.status(304);
               res.end();
-              return next();
+              return;
             }
 
             parameterProfile = '';
@@ -1392,7 +1393,7 @@ function handleResource(req, res, next, options){
                 break;
             }
             res.end();
-            return next();
+            return;
           },
           function(reason){
             if('toContentType' in reason && reason.toContentType == 'text/html'){
@@ -1402,7 +1403,7 @@ function handleResource(req, res, next, options){
               res.status(500);
               res.end();
             }
-            return next();
+            return;
           }
         );
       });
@@ -1509,7 +1510,7 @@ function postContainer(req, res, next, options){
         res.status(404);
         res.end();
         storeMeta(req, res, next, Object.assign(options, { "file": file }));
-        return next();
+        return;
       }
 
       if(createRequest) {
@@ -1749,7 +1750,7 @@ function deleteResource(path){
   fs.stat(path, function(error, stats) {
     if (error) {
       res.status(404);
-      return next();
+      res.end();
     }
 
     if (stats.isFile()) {
