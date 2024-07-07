@@ -1012,8 +1012,9 @@ function handleResource(req, res, next, options){
       }
       else {
         res.status(404);
+        res.end();
       }
-      return next();
+      return;
     }
 
     if (stats.isFile()) {
