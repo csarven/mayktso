@@ -901,7 +901,7 @@ function applyParserFixes(data, fromContentType, toContentType) {
 
 
 function transformJsonldContextURLScheme(data) {
-  console.log(data)
+  // console.log(data)
   if (typeof data["@context"] === "string") {
     data["@context"] = data["@context"].replace(/^http:/, 'https:');
   }
