@@ -1758,11 +1758,18 @@ function storeMeta(req, res, next, options){
 // console.log(res.header()._headers);
 // console.log(data);
 // console.log(JSON.stringify(data));
+// console.log(options.file)
 
     if(res.statusCode >= 400 && res.statusCode < 500) {
       deleteFile(options.file);
     }
-    fs.writeFile(options.file + '.json', JSON.stringify(data));
+    fs.writeFile(options.file + '.json', JSON.stringify(data), (err) => {
+      if (err) {
+        console.error('Error writing file:', err);
+      } else {
+        console.log('File written successfully');
+      }
+    });
   }
 }
 
